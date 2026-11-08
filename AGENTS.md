@@ -45,3 +45,37 @@ Done when this returns a JSON array of genre names (e.g. `["Rock", "Samba", ...]
 - Editing `data/top/*.csv` requires a restart: it's read once at import time, not per-request.
 - Every endpoint returns `json.dumps(...)` as a plain string, not `jsonify` — responses come back `Content-Type: text/html`. This is intentional legacy behavior; changing it is a real API change, not a cleanup.
 - Check `docs/adr/` before changing the deploy setup — it has a documented reason for its current state.
+
+## RePPIT workflow: one phase per session
+
+The "Sequências de Acordes Customizadas" exercise
+([docs/features/sequencias-customizadas/](docs/features/sequencias-customizadas/))
+runs the RePPIT framework in five phases, in order: **pesquisa → proposta →
+plano → implementação → testes**.
+
+- **One phase per session.** Each opencode session runs exactly one RePPIT
+  command (`pesquisa`, `proposta`, `plano`, `implementar`, `testes`) and then
+  stops.
+- **A new session only starts once the previous phase is settled**: its file
+  in `docs/features/sequencias-customizadas/` is filled in, with the
+  instruction blockquote removed.
+- **The user triggers every command.** The agent never starts or advances a
+  phase on its own; it waits to be told.
+- **State lives in the phase files, not in chat.** To find where we are,
+  read `01-research.md`, `02-proposal.md`, `03-plan.md`, `04-test-report.md`
+  and see which is still an untouched template.
+- If a decision changes later, the earlier phase document is updated before
+  moving on — the plan never stays stale.
+- **Export the session at the end of every phase.** The delivery requires the
+  session file, and each phase is its own session, so nothing else carries it
+  over. Do it before closing the session:
+
+  ```
+  opencode session list                       # newest first, copy the ses_ id
+  opencode session export <ses_id> \
+    > docs/features/sequencias-customizadas/sessions/<NN>-<fase>.json
+  ```
+
+  (`opencode session export` needs an explicit ID when there's no TTY; in the
+  TUI, `/export` does the same.) Committing the `sessions/` files is part of
+  the deliverable, not scratch output.
