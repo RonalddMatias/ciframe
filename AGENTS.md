@@ -6,9 +6,9 @@ similar songs. Full description: [README.md](README.md).
 
 ## Stack
 
-- Backend: Python 3.9, Flask 3.1, gunicorn. Single file (`main.py`) that
-  loads `data/top/dataset_final.csv` into memory once at startup — there is
-  no database.
+- Backend: Python 3.9, Flask 3.1, gunicorn. `main.py` loads
+  `data/top/dataset_final.csv` into memory once at startup (no database for
+  songs); the catalog of chord sequences lives in SQLite (`catalogo.py`).
 - Frontend: AngularJS 1.4.9 + jQuery, loaded from CDN in `static/index.html`,
   no build step. Legacy, and there's no plan to modernize the stack itself —
   but touching it is no longer off-limits when a task needs it; see
@@ -21,8 +21,17 @@ Docker (matches how the app actually ships):
 
 ```
 docker build -t ciframe .
-docker run -p 8080:8080 ciframe
+docker run -v ciframe-data:/data -p 8080:8080 ciframe
 ```
+
+O volume nomeado `ciframe-data` guarda o catálogo de sequências
+(`/data/catalogo.db`), então sequências cadastradas sobrevivem a `docker
+restart` e a `docker rm` + novo `docker run`. Para inspecionar o banco com
+qualquer cliente SQL, troque o volume por um bind mount:
+`-v "$PWD/var:/data"`. Sem `-v`, o Docker cria um volume anônimo: sobrevive a
+restart, mas não é reaproveitado se o container for recriado. Não há
+`DELETE`/edição de sequência na API; remover uma linha é SQL manual no
+`catalogo.db`.
 
 Or a plain virtualenv:
 

@@ -20,7 +20,7 @@ passo depende de serviço externo ou de nova dependência de runtime.
 
 ## Passos
 
-1. [ ] **Criar `matching.py` e `tests/test_matching.py`** (~45 min).
+1. [x] **Criar `matching.py` e `tests/test_matching.py`** (~45 min).
    - `normaliza(token)` = `token.strip().lower()`;
      `chave_de(acordes)` = `';'.join(normaliza(a) ...)`;
      `prepara_alvo(acordes)` devolve `(lista_norm, set_norm)`;
@@ -33,14 +33,14 @@ passo depende de serviço externo ou de nova dependência de runtime.
      música que tenha `G7`; cifra vazia nunca casa; caixa alta/baixa colapsam.
    - **Feito quando:** `pytest tests/test_matching.py -q` verde.
 
-2. [ ] **Pré-computar normalização em `musica.py`** (~20 min).
+2. [x] **Pré-computar normalização em `musica.py`** (~20 min).
    - No `__init__`, adicionar `self.cifra_norm` (lista de tokens em minúsculas)
      e `self.acordes_norm` (set). Manter `cifra` e `acordes` como estão para não
      mudar `/similares?acordes=` nem `/musicas`.
    - **Feito quando:** `/musicas` e `/acordes` devolvem o mesmo payload de antes
      (comparar tamanho/amostra) e o boot não passa de ~1 s além do atual.
 
-3. [ ] **Criar `catalogo.py`** (~1 h 30 min).
+3. [x] **Criar `catalogo.py`** (~1 h 30 min).
    - `DB_PATH = os.environ.get("CIFRAME_DB", "var/catalogo.db")`;
      `conectar()` por request com `row_factory`, `PRAGMA journal_mode=WAL` e
      `busy_timeout=5000`; fechar no `finally` de cada operação.
@@ -54,7 +54,7 @@ passo depende de serviço externo ou de nova dependência de runtime.
    - **Feito quando:** rodar `init_db()` duas vezes no mesmo arquivo deixa
      exatamente 6 linhas; criar/reabrir em processo separado encontra a nova.
 
-4. [ ] **Expor a API em `main.py`** (~1 h 30 min).
+4. [x] **Expor a API em `main.py`** (~1 h 30 min).
    - Chamar `init_db()` no import; remover o dict literal `sequencias`
      (`main.py:40-45`) e `get_similares_por_sequencia` (vira busca por id).
    - `GET /sequencias` → 200, lista ordenada por `id`, `json.dumps(...)`.
@@ -72,7 +72,7 @@ passo depende de serviço externo ou de nova dependência de runtime.
      com status e corpo esperados, inclusive `?sequencia=cgamf` (passa a
      funcionar, mudança intencional).
 
-5. [ ] **Persistência no container** (~45 min).
+5. [x] **Persistência no container** (~45 min).
    - `Dockerfile`: `RUN mkdir -p /data`, `ENV CIFRAME_DB=/data/catalogo.db`,
      `VOLUME ["/data"]`.
    - `.gitignore` e `.dockerignore`: adicionar `var/`.
@@ -82,7 +82,7 @@ passo depende de serviço externo ou de nova dependência de runtime.
    - **Feito quando:** o roteiro de container da proposta passa (POST →
      `restart` → ainda lá; `rm` + `run` com o mesmo volume → ainda lá).
 
-6. [ ] **Catálogo no frontend** (~45 min).
+6. [x] **Catálogo no frontend** (~45 min).
    - `sequencia.js:2-37`: remover as 4 sequências literais; carregar
      `GET /sequencias` no init e mapear `acordes: ["Bm","G",...]` para
      `[{acorde, cor: '#2E1C74'}]`, guardando `id`/`nome` no objeto da sequência
@@ -92,7 +92,7 @@ passo depende de serviço externo ou de nova dependência de runtime.
    - **Feito quando:** `#/porsequencia` mostra as 6 (incluindo `Em-G` e
      `C-A7-Dm-G7`, que hoje não aparecem) sem erro no console.
 
-7. [ ] **Formulário de cadastro** (~1 h).
+7. [x] **Formulário de cadastro** (~1 h).
    - `sequencia.html`: no painel esquerdo, input de acordes (vírgula ou espaço),
      input de nome opcional e botão "Cadastrar"; desabilitar durante o POST.
    - `sequencia.js`: `POST /sequencias`; 201 → recarrega o catálogo, seleciona a
@@ -102,13 +102,13 @@ passo depende de serviço externo ou de nova dependência de runtime.
      aparece no catálogo e a busca funciona; cadastrar a mesma de novo cai no
      409 sem duplicar.
 
-8. [ ] **Busca por id no frontend** (~30 min).
+8. [x] **Busca por id no frontend** (~30 min).
    - `sequencia.js:63-90`: montar `similares?sequencia_id=<id>` (+ `&generos=`)
      e remover `createChordsString` do controller (o backend mantém o legado).
    - **Feito quando:** clicar numa das 6 e numa nova devolve os mesmos cards
      que o caminho legado, inclusive com filtro de gênero.
 
-9. [ ] **Fechar a suíte de testes** (~1 h 30 min).
+9. [x] **Fechar a suíte de testes** (~1 h 30 min).
    - `requirements-dev.txt` com `pytest` (fora da imagem).
    - `test_api.py`: seeds no `GET`; POST válido/duplicado/inválido; busca por
      `sequencia_id` de sequência nova; `sequencia_id` inexistente → 404;
@@ -123,7 +123,7 @@ passo depende de serviço externo ou de nova dependência de runtime.
    - **Feito quando:** `pytest -q` verde e o teste de regressão acusa 0 faltando
      / 0 sobrando nas 6.
 
-10. [ ] **Validação manual e de container** (~45 min).
+10. [x] **Validação manual e de container** (~45 min).
     - Rodar o roteiro de container da proposta e o manual (cadastrar, buscar,
       filtrar por gênero, recarregar; catálogo com as 6).
     - Registrar no `04-test-report.md` os números medidos (contagens por
@@ -131,11 +131,35 @@ passo depende de serviço externo ou de nova dependência de runtime.
     - **Feito quando:** todos os itens do roteiro passam e os números estão
       anotados para a fase de testes.
 
-11. [ ] **Fechar a fase** (~15 min).
+11. [x] **Fechar a fase** (~15 min).
     - Atualizar este plano se algum passo tiver mudado de fato (não deixar plano
       desatualizado).
     - Exportar a sessão da implementação para `sessions/04-implementacao.json`
       ao final dela (a sessão desta fase já vai para `sessions/03-plano.json`).
+
+## Ajustes durante a implementação
+
+Decisões que mudaram em relação ao texto original dos passos, registradas aqui
+antes de seguir (nenhuma muda a API, o schema ou o comportamento visível):
+
+- **`catalogo.caminho_db()` em vez de `DB_PATH` constante.** O caminho lê
+  `CIFRAME_DB` a cada operação (default `var/catalogo.db`). O motivo é teste:
+  `main.py` chama `init_db()` no import, então uma constante congelada no import
+  impediria cada teste de apontar para o próprio `tmp_path`. O default e o
+  comportamento em produção não mudam.
+- **`Musica.to_dict()` novo, e `/musicas`/`/musica/<id>` passam a usá-lo.**
+  Guardar `cifra_norm`/`acordes_norm` no `__dict__` os faria vazar no payload
+  desses dois endpoints (que serializavam `__dict__`). `to_dict()` devolve
+  exatamente as 12 chaves originais, na mesma ordem; o payload não muda.
+- **`sys.intern` nos tokens normalizados.** Evita duplicar 3,5 M strings de
+  acorde; as 6.653 formas distintas ficam compartilhadas.
+- **Regressão por gênero no teste agrupa o resultado da regra em tempo real** em
+  vez de fazer uma chamada HTTP por sequência × gênero (seriam ~60 s só nisso).
+  O conjunto global continua sendo comparado via endpoint, e há um
+  spot-check de endpoint com filtro de gênero para cada uma das 6. A suíte
+  inteira roda em ~13 s.
+- **`static/assets/css/app.css`** ganhou `.sequencia-nome` para o nome da
+  sequência abaixo dos hexágonos.
 
 ## Arquivos afetados
 
@@ -143,13 +167,14 @@ passo depende de serviço externo ou de nova dependência de runtime.
 |---|---|
 | `matching.py` (novo) | `normaliza`, `chave_de`, `prepara_alvo`, `casa` — regra pura (a)+(b). |
 | `catalogo.py` (novo) | Conexão SQLite, `init_db` + seed das 6, `listar`/`buscar`/`criar`/`resolver_legado`, `SequenciaDuplicada`. |
-| `musica.py` | `cifra_norm` e `acordes_norm` no `__init__`; `cifra`/`acordes` inalterados. |
+| `musica.py` | `cifra_norm`/`acordes_norm` no `__init__`; `to_dict()` para preservar o payload de `/musicas` e `/musica/<id>`. |
 | `main.py` | `init_db()` no import; `GET`/`POST /sequencias`; ramo `sequencia_id` e legado reescrito em `/similares`; sai o dict literal e `get_similares_por_sequencia`. |
 | `Dockerfile` | `mkdir /data`, `ENV CIFRAME_DB`, `VOLUME ["/data"]`. |
 | `.gitignore`, `.dockerignore` | Ignorar `var/` (banco local). |
 | `AGENTS.md`, `README.md` | Comando de execução com `-v ciframe-data:/data`; nota sobre bind mount e remoção manual. |
 | `static/assets/js/controllers/sequencia.js` | Catálogo via `GET`, formulário/`POST`, busca por `sequencia_id`; saem literais e `createChordsString`. |
 | `static/templates/sequencia.html` | Formulário de cadastro, estados de carregando/erro e mensagens de 400/409. |
+| `static/assets/css/app.css` | `.sequencia-nome` para o rótulo abaixo dos hexágonos. |
 | `tests/` (novo: `test_matching.py`, `test_api.py`, `test_persistencia.py`, `test_legado.py`, `test_regressao.py`) | Cobertura da regra, API, persistência, legado e regressão. |
 | `requirements-dev.txt` (novo) | `pytest` para reprodutibilidade, fora da imagem. |
 | `docs/features/sequencias-customizadas/04-test-report.md` | Números medidos na validação (fase seguinte). |
@@ -173,27 +198,30 @@ passo depende de serviço externo ou de nova dependência de runtime.
 
 ## Definição de pronto
 
-- [ ] Qualquer visitante cadastra uma sequência pela página `#/porsequencia`,
+- [x] Qualquer visitante cadastra uma sequência pela página `#/porsequencia`,
       sem login, e recebe 201; duplicata retorna 409 com o id existente e a UI
       seleciona a sequência já cadastrada.
-- [ ] A sequência cadastrada aparece no catálogo após reload da página e pode
+- [x] A sequência cadastrada aparece no catálogo após reload da página e pode
       ser usada para buscar músicas, com e sem filtro de gênero.
-- [ ] O catálogo da tela vem de `GET /sequencias` (nenhuma sequência hardcoded
+- [x] O catálogo da tela vem de `GET /sequencias` (nenhuma sequência hardcoded
       em JS) e mostra as 6 originais, incluindo `Em-G` e `C-A7-Dm-G7`.
-- [ ] As 6 originais produzem **o mesmo conjunto de `id_unico_musica`** de
+- [x] As 6 originais produzem **o mesmo conjunto de `id_unico_musica`** de
       antes (por sequência e por sequência+gênero), com 0 faltando e 0
       sobrando; contagens de página em `BmGDA`: 100 / 99 / 0.
-- [ ] Persistência comprovada no container: sequência cadastrada sobrevive a
+- [x] Persistência comprovada no container: sequência cadastrada sobrevive a
       `docker restart` e a `docker rm` + `docker run` com o volume
       `ciframe-data`.
-- [ ] Respostas continuam sendo `json.dumps(...)` (string, `text/html`),
+- [x] Respostas continuam sendo `json.dumps(...)` (string, `text/html`),
       inclusive `GET`/`POST /sequencias`; `musicas`/`generos` continuam vindo
       do CSV em memória.
-- [ ] `?sequencia=` legado devolve o mesmo conjunto das 6 grafias canônicas;
+- [x] `?sequencia=` legado devolve o mesmo conjunto das 6 grafias canônicas;
       chave desconhecida devolve `[]`.
-- [ ] `pytest -q` verde cobrindo matching, API, persistência, legado e
+- [x] `pytest -q` verde cobrindo matching, API, persistência, legado e
       regressão; `requirements-dev.txt` versionado e `pytest` fora da imagem.
-- [ ] `Dockerfile` com `VOLUME`, `AGENTS.md`/`README.md` com o comando novo e
+- [x] `Dockerfile` com `VOLUME`, `AGENTS.md`/`README.md` com o comando novo e
       ADR 0002 consistente com o que foi implementado.
 - [ ] `04-test-report.md` preenchido com os números medidos e o resultado do
       teste de regressão; sessões das fases exportadas em `sessions/`.
+      *Nesta fase os números já estão registrados no relatório e a sessão da
+      implementação foi exportada; a narrativa de cobertura fica para a fase de
+      testes.*

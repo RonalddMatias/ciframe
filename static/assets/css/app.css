@@ -163,6 +163,13 @@ a:active {
   margin: auto;
   clear: both;
 }
+.sequencia-nome {
+  clear: both;
+  margin-top: 4px;
+  margin-bottom: 12px;
+  font-size: 0.8em;
+  color: #666;
+}
 /* Acorde directive*/
 .acorde-wrapper {
   float: left;

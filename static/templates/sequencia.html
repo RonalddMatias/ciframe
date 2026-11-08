@@ -3,10 +3,41 @@
     <div class="col-sm-6 col-md-4 viewWindow-panel viewWindow-panel-C">
       <div class="viewWindow-panel-container">
         <h4 class="text-center">Aponte uma sequencia de acordes</h4>
+
+        <p class="text-center" ng-if="Sequencia.carregandoCatalogo">Carregando sequências...</p>
+
+        <div class="alert alert-danger" ng-if="Sequencia.erroCatalogo">
+          Não foi possível carregar o catálogo.
+          <button class="btn btn-default btn-sm" ng-click="Sequencia.carregarCatalogo()">Tentar de novo</button>
+        </div>
+
         <div class="acordes-container" ng-repeat='sequencia in Sequencia.sequenciasFamosas' ng-click="Sequencia.pesquisarPorSequencia(sequencia)">
           <df-hex acorde="{{acordeon.acorde}}" acorde-color="{{acordeon.cor}}" acorde-checked="Sequencia.temAcorde(acordeon)" ng-repeat="acordeon in sequencia.acordes"></df-hex>
+          <div class="sequencia-nome text-center">{{sequencia.nome}}</div>
         </div>
         <br style="clear: both;">
+
+        <hr>
+        <h5 class="text-center">Cadastrar nova sequência</h5>
+        <form ng-submit="Sequencia.cadastrarSequencia()">
+          <div class="form-group">
+            <input type="text" class="form-control"
+                   placeholder="Acordes (ex.: Am, F, C, G)"
+                   ng-model="Sequencia.novaSequencia.acordes">
+          </div>
+          <div class="form-group">
+            <input type="text" class="form-control"
+                   placeholder="Nome (opcional)"
+                   ng-model="Sequencia.novaSequencia.nome">
+          </div>
+          <button type="submit" class="btn btn-primary btn-block"
+                  ng-disabled="Sequencia.cadastrando || !Sequencia.novaSequencia.acordes">
+            {{ Sequencia.cadastrando ? 'Cadastrando...' : 'Cadastrar' }}
+          </button>
+        </form>
+        <div class="alert alert-success" ng-if="Sequencia.mensagemCadastro">{{Sequencia.mensagemCadastro}}</div>
+        <div class="alert alert-danger" ng-if="Sequencia.erroCadastro">{{Sequencia.erroCadastro}}</div>
+
         <button class="search-results-count" ng-if="Sequencia.showSearchResultsCount" ng-click="Sequencia.goToResults()">
           <span class="glyphicon glyphicon-triangle-bottom bounce animated infinite"></span>
           <br>
