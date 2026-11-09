@@ -10,21 +10,21 @@
     },
     "cost": 0,
     "tokens": {
-      "input": 160136,
-      "output": 22700,
-      "reasoning": 33999,
+      "input": 176866,
+      "output": 26481,
+      "reasoning": 40424,
       "cache": {
-        "read": 4400186,
+        "read": 5141420,
         "write": 0
       }
     },
     "outcome": "succeeded",
     "time": {
       "created": 1794099964304,
-      "updated": 1794183884570,
-      "busy": 1794183824356,
-      "idle": 1794183805199,
-      "viewed": 1794183805199
+      "updated": 1794184269743,
+      "busy": 1794184179980,
+      "idle": 1794183893014,
+      "viewed": 1794183893014
     },
     "title": "RePPIT final phase code review",
     "location": {
@@ -8439,6 +8439,713 @@
         "reasoning": 0,
         "cache": {
           "read": 69128,
+          "write": 0
+        }
+      }
+    },
+    {
+      "id": "msg_1bdb1653a001hCAaHBCsAmVZLT",
+      "time": {
+        "created": 1794183882046,
+        "streamed": 1794183885279,
+        "completed": 1794183888392
+      },
+      "type": "assistant",
+      "agent": "build",
+      "model": {
+        "id": "big-pickle",
+        "providerID": "opencode",
+        "variant": "default"
+      },
+      "content": [
+        {
+          "type": "tool",
+          "id": "call_da8f9566d10846b1af8fa2aa",
+          "name": "shell",
+          "executed": false,
+          "state": {
+            "status": "completed",
+            "input": {
+              "command": "cd /Users/Ronaldd.Feliph/ufcg/ciframe && opencode session export ses_e474f16cdffe3MCPAdSVdrJmeN > docs/features/sequencias-customizadas/sessions/05-testes.json && .venv/bin/python -c \"\nimport json\nd = json.load(open('docs/features/sequencias-customizadas/sessions/05-testes.json'))\nprint('mensagens:', len(d['messages']))\n\" && git add docs/features/sequencias-customizadas/sessions/05-testes.json && git commit -q -m \"Atualiza a sessão da fase 5 com a validação do container\" && git push origin feat/sequencias-customizadas 2>&1 | tail -3 && git status -sb",
+              "timeout": 120000
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "mensagens: 121\nTo github.com:RonalddMatias/ciframe.git\n   e5bf967..b48c2a9  feat/sequencias-customizadas -> feat/sequencias-customizadas\n## feat/sequencias-customizadas...origin/feat/sequencias-customizadas\n"
+              }
+            ],
+            "metadata": {
+              "status": "completed",
+              "truncated": false,
+              "exit": 0
+            }
+          },
+          "time": {
+            "created": 1794183884574,
+            "ran": 1794183885277,
+            "completed": 1794183888322
+          }
+        }
+      ],
+      "snapshot": {
+        "start": "0019bb73ab2cbd232591c6df4c76658f358416a8",
+        "end": "2cfc6b87a4fd59d60d13e701b1363017ece70beb",
+        "files": [
+          "docs/features/sequencias-customizadas/sessions/05-testes.json"
+        ]
+      },
+      "finish": "tool-calls",
+      "rawFinish": "tool_calls",
+      "cost": 0,
+      "tokens": {
+        "input": 308,
+        "output": 224,
+        "reasoning": 0,
+        "cache": {
+          "read": 69440,
+          "write": 0
+        }
+      }
+    },
+    {
+      "id": "msg_1bdb17e0d001J4WTygHOGekerz",
+      "time": {
+        "created": 1794183888398,
+        "streamed": 1794183892985,
+        "completed": 1794183893011
+      },
+      "type": "assistant",
+      "agent": "build",
+      "model": {
+        "id": "big-pickle",
+        "providerID": "opencode",
+        "variant": "default"
+      },
+      "content": [
+        {
+          "type": "reasoning",
+          "text": "Done. Summarize results concisely.\n\nCleanup: image `ciframe:latest` remains locally; volumes removed; no containers. Should I remove the image? It's the build artifact; harmless and useful. Leave it, mention.\n\nFinal summary in PT-BR.",
+          "native": {
+            "reasoningField": "reasoning_content"
+          },
+          "time": {
+            "created": 1794183890054,
+            "completed": 1794183892982
+          }
+        },
+        {
+          "type": "text",
+          "text": "Docker validado do zero, com a imagem final (incluindo o `.dockerignore` novo). Resultado:\n\n**Build e conteúdo**\n- `docker build` OK — `ciframe:latest`, 345 MB.\n- `/app` não tem mais `docs/`, `research/` nem `tests/`; ficaram só runtime + `data/`.\n\n**Fluxo de persistência (volume nomeado)**\n- `GET /generos` → 200, 52 gêneros.\n- `POST /sequencias` → 201, criada com id 7.\n- `docker restart` → 7 sequências; a criada continua lá.\n- `docker rm` + `docker run` com o mesmo volume → 7 sequências, ids `[1..7]`.\n- Duplicata (`[\"am\",\"f\",\"c\",\"g\"]`) → **409** com `{\"id\": 7}`.\n\n**Correções da revisão dentro do container**\n```\npagina=abc        → 400 {\"erro\": \"pagina deve ser um inteiro\"}\nsequencia_id 40d  → 404 {\"erro\": \"sequencia nao encontrada\"}\n/musica/nope/     → 404 {\"erro\": \"musica nao encontrada\"}\npagina=999        → 200 []\n```\n\nContainer e volume de teste removidos ao final; só a imagem `ciframe:latest` ficou local.\n\nRelatório e sessão atualizados e no `origin`:\n\n```\nb48c2a9 Atualiza a sessão da fase 5 com a validação do container\ne5bf967 Registra a validação do container refeita com o Docker\nfed2291 Exporta a sessão da fase 5 (testes) do RePPIT\n```\n\nWorking tree limpo. A única ressalva registrada no relatório agora é que a imagem ainda carrega `Dockerfile`, `LICENSE`, `requirements-dev.txt` e `scripts/` (não era objetivo enxugar além disso)."
+        }
+      ],
+      "snapshot": {
+        "start": "2cfc6b87a4fd59d60d13e701b1363017ece70beb",
+        "end": "2cfc6b87a4fd59d60d13e701b1363017ece70beb",
+        "files": []
+      },
+      "finish": "stop",
+      "rawFinish": "stop",
+      "cost": 0,
+      "tokens": {
+        "input": 432,
+        "output": 444,
+        "reasoning": 56,
+        "cache": {
+          "read": 69618,
+          "write": 0
+        }
+      }
+    },
+    {
+      "id": "msg_1bdb19016001Y1nPNWiIScUQXC",
+      "time": {
+        "created": 1794183893014
+      },
+      "type": "idle",
+      "outcome": "succeeded"
+    },
+    {
+      "id": "msg_1bdb5f0f700154y94WSrCBLn5B",
+      "time": {
+        "created": 1794184179985
+      },
+      "text": "perfeito. então agora você vai criar um roteiro para mostrar a nova funcionalidade pois eu vou gravar. após isso pode exportar a sessão e dar commit.",
+      "files": [],
+      "agents": [],
+      "type": "user"
+    },
+    {
+      "id": "msg_1bdb5f11800165QxQR64YemxSo",
+      "time": {
+        "created": 1794184179995,
+        "streamed": 1794184185244,
+        "completed": 1794184185290
+      },
+      "type": "assistant",
+      "agent": "build",
+      "model": {
+        "id": "big-pickle",
+        "providerID": "opencode",
+        "variant": "default"
+      },
+      "content": [
+        {
+          "type": "reasoning",
+          "text": "The user wants a script/roteiro (screenplay) to record a demo video of the new functionality. Then export the session and commit.\n\nContext: the feature is \"Sequências de Acordes Customizadas\". There's a parallel branch `feat/nova_feature` with a demo video `demo-sequencias-customizadas.mp4`. Maybe I should look at it for reference? Not necessary, but could see the approach. The user will record. We should produce a roteiro in Portuguese: step-by-step narration, what to show, timings, commands, URLs, expected results. Should we create it as a file in docs/features/sequencias-customizadas/? Probably `docs/features/sequencias-customizadas/05-roteiro-video.md` or `video-roteiro.md`. Given sessions naming `05-testes.json`, the phase 5 deliverable includes video. A roteiro file makes sense: `docs/features/sequencias-customizadas/roteiro-video.md` or `05-roteiro-video.md`. Since phases are 01..04 files, adding `05-roteiro-video.md` is coherent. Let me check the enunciado to know exactly what the video should show and the delivery requirements.\n\nLet me read `00-enunciado.md` and the README of the app / feature docs to craft accurate narration, including the \"custom sequences\" UI route `#/porsequencia`, registration flow, duplicate handling, legacy links, matching explanation, migration to SQLite, tests perhaps.\n\nAlso know the app routes: index.html, `#/porsequencia`. Check `static/index.html` routers and how to start the app. Frontend is AngularJS with hash routes. Need precise browser steps: open http://localhost:8080/, click \"Sequências\" menu? Let me inspect index.html for navigation and routes, and the directive df-hex. Also check the previous branch video? Could extract frames? Not needed.\n\nLet me read the enunciado and index.html.",
+          "native": {
+            "reasoningField": "reasoning_content"
+          },
+          "time": {
+            "created": 1794184181874,
+            "completed": 1794184185233
+          }
+        },
+        {
+          "type": "tool",
+          "id": "call_646a2f73acb54b4c9f8493a2",
+          "name": "shell",
+          "executed": false,
+          "state": {
+            "status": "completed",
+            "input": {
+              "command": "cd /Users/Ronaldd.Feliph/ufcg/ciframe && cat docs/features/sequencias-customizadas/00-enunciado.md"
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "# Tarefa: Sequências de Acordes Customizadas\n\n## Contexto\n\nVimos em sala de aula que os princípios de engenharia é que são fundamentais, independente da tecnologia. Então vamos focar em exercitar nossas habilidades de engenheiros através dos workflows que apresentei em sala de aula.\n\nComo disse, temos 3 bons candidatos: o RePPIT, o do Matt Pocock (o que mais uso até agora) e o /pstack da @poteto.\n\nVamos começar com o RePPIT por dois motivos: é um framework que está alinhado com o que a gente vem discutindo e, principalmente, há uma implementação dele que ainda é incipiente. \n\nA ideia é usarmos como está agora e tentarmos sugerir mudanças nos comandos que ele definiu aqui: (https://github.com/levelup-labs-ai/reppit-framework/tree/main/commands)\n\n## Como instalar os comandos do reppit no opencode\n\n`git clone https://github.com/levelup-labs-ai/reppit-framework.git ~/reppit-framework`\n\n`mkdir -p ~/.config/opencode/commands`\n\n`cp ~/reppit-framework/commands/*.md ~/.config/opencode/commands/`\n\n# A tarefa\n\nHá muito tempo atrás, eu fiz o deciframe, um app em que você lista os acordes que você sabe tocar e ele minera músicas do cifraclub para mostrar quais você pode já sabe tocar com os acordes que você apontou. Também lista algumas músicas que, se você aprender alguns acordes a mais, você saberá tocar. Veja [README.md](../../../README.md) e [AGENTS.md](../../../AGENTS.md) na raiz do projeto para a stack e as\nconvenções do backend antes de começar.\n\nHoje, a busca por \"sequência famosa\" (`GET /similares?sequencia=...`) só\nreconhece 6 sequências *hardcoded* no backend (`main.py`), e o\nfrontend (`#/porsequencia`) mostra apenas 4 delas, também hardcoded em\nJavaScript. Essas sequências vêm de uma tag pré-computada no CSV\n(`SEQ_FAMOSA`). Não existe nenhuma lógica que calcule, em tempo real, se uma\nsequência de acordes aparece em uma música.\n\n## O que você vai construir\n\nUma feature que permite a **qualquer visitante cadastrar uma nova sequência de\nacordes famosa** e **buscar músicas por ela**, exatamente do mesmo jeito que já\nfunciona hoje para as 6 sequências pré-existentes. O catálogo de sequências\npassa a ser persistido em um **banco de dados** (não mais no CSV), para\nsobreviver a reinícios do servidor e poder crescer sem precisar de um novo\ndeploy.\n\nEsta é uma tarefa **full-stack**: ela toca o backend (Flask), a persistência\n(novo: um banco de dados) e o frontend (AngularJS).\n\n## O que é obrigatório (requisitos funcionais)\n\n- Qualquer pessoa pode cadastrar uma nova sequência de acordes (lista ordenada\n  de acordes). Sem login. Catálogo aberto e anônimo.\n- Qualquer sequência cadastrada (as 6 originais + as novas) pode ser usada para\n  buscar músicas, com os mesmos resultados esperados de hoje para as 6\n  originais.\n- O catálogo de sequências é persistido em um banco de dados. Não volta a ser\n  perdido ao reiniciar o container.\n- A página `#/porsequencia` do frontend reflete o catálogo real (vindo do\n  backend, não mais hardcoded em JS) e permite cadastrar uma sequência nova.\n\n## O que está fixo (não é decisão sua)\n\n- É obrigado o uso do `opencode` e do modelo `BigPickle`.\n- O catálogo de **músicas e gêneros continua vindo do CSV**, carregado em\n  memória como hoje. Não migre `musicas`/`generos` para o banco. Só o\n  catálogo de sequências precisa de persistência.\n- A aplicação continua rodando via o `Dockerfile` único e local-only já\n  documentado em `docs/adr/0001-local-only-docker-deploy.md` (container único,\n  sem serviços externos adicionais).\n- As 6 sequências hoje hardcoded precisam continuar produzindo os mesmos\n  resultados de busca depois da sua mudança. É o seu critério para teste de regressão.\n- Endpoints continuam retornando `json.dumps(...)` como string, não `jsonify`.\n\n## O que é decisão sua (faz parte do trabalho)\n\n- O **algoritmo de matching**: o que define que uma sequência \"aparece\" em uma\n  música.\n- A **tecnologia de banco de dados** (desde que caiba no container Docker\n  único e local).\n- O formato exato da API nova, o esquema do banco, e os detalhes de validação\n  (ex.: o que fazer com sequências duplicadas).\n\n## Fluxo de trabalho obrigatório\n\nEste exercício avalia principalmente o **processo**, não só o resultado final.\nSiga as 5 fases usando [este ferramental](https://github.com/levelup-labs-ai/reppit-framework/tree/main/commands), nesta ordem, e documente cada uma antes de passar para a próxima.\n\n# Como instalar os comandos do reppit no opencode\n`git clone https://github.com/levelup-labs-ai/reppit-framework.git ~/reppit-framework` \n\n`mkdir -p ~/.config/opencode/commands`\n\n`cp ~/reppit-framework/commands/*.md ~/.config/opencode/commands/`\n\n\n1. **Pesquisa** — investigue as perguntas em\n   [`01-research.md`](01-research.md) com evidência real, não suposição.\n2. **Proposta** — decida e justifique a abordagem em\n   [`02-proposal.md`](02-proposal.md). Inclua uma ADR em\n   [`docs/adr/0002-persist-custom-sequences.md`](../../adr/0002-persist-custom-sequences.md)\n   documentando a decisão de introduzir persistência, no mesmo estilo de\n   `0001-local-only-docker-deploy.md`.\n3. **Plano** — decomponha a proposta em passos executáveis em\n   [`03-plan.md`](03-plan.md).\n4. **Implementação** — siga o plano. Se mudar de ideia no meio do caminho,\n   volte e atualize o plano antes de continuar (não deixe o plano\n   desatualizado).\n5. **Testes** — documente cobertura e o resultado do teste de regressão\n   obrigatório em [`04-test-report.md`](04-test-report.md).\n\n\n### O que você vai entregar\n\n- Os templates de cada fase já existem no diretório docs/features/sequencias-customizadas. Preencha-os (e apague as\ninstruções em bloco de citação de cada um antes de entregar).\n\n- Um vídeo/gif demonstrando a feature funcionando no browser.\n\n- O arquivo da sessão.\n\nSuba tudo para o seu fork e compartilhe o link no form. \n\n## Como vai ser corrigido?\n\n| Fase | Peso |\n|---|---|\n| Pesquisa | 15% |\n| Proposta (+ ADR) | 20% |\n| Plano | 20% |\n| Implementação | 25% |\n| Testes | 20% |\n\nA nota de cada fase reflete a honestidade do raciocínio documentado,\nnão só se a feature \"funciona\" no final.\n"
+              }
+            ],
+            "metadata": {
+              "status": "completed",
+              "truncated": false,
+              "exit": 0
+            }
+          },
+          "time": {
+            "created": 1794184185039,
+            "ran": 1794184185242,
+            "completed": 1794184185270
+          }
+        }
+      ],
+      "snapshot": {
+        "start": "2cfc6b87a4fd59d60d13e701b1363017ece70beb",
+        "end": "2cfc6b87a4fd59d60d13e701b1363017ece70beb",
+        "files": []
+      },
+      "finish": "tool-calls",
+      "rawFinish": "tool_calls",
+      "cost": 0,
+      "tokens": {
+        "input": 671,
+        "output": 68,
+        "reasoning": 423,
+        "cache": {
+          "read": 69920,
+          "write": 0
+        }
+      }
+    },
+    {
+      "id": "msg_1bdb605d00011Z569GRRjI9QkB",
+      "time": {
+        "created": 1794184185298,
+        "streamed": 1794184187569,
+        "completed": 1794184187636
+      },
+      "type": "assistant",
+      "agent": "build",
+      "model": {
+        "id": "big-pickle",
+        "providerID": "opencode",
+        "variant": "default"
+      },
+      "content": [
+        {
+          "type": "reasoning",
+          "text": "Now understand the UI: route `#/porsequencia`, navigation. Let me look at `static/index.html` for menu and routes, and CSS/instructions for starting app. Also check whether the app has a nav link \"Por sequência\". Let me grep.",
+          "native": {
+            "reasoningField": "reasoning_content"
+          },
+          "time": {
+            "created": 1794184186703,
+            "completed": 1794184187563
+          }
+        },
+        {
+          "type": "tool",
+          "id": "call_0fac03a12bb5470687cb5f9d",
+          "name": "shell",
+          "executed": false,
+          "state": {
+            "status": "completed",
+            "input": {
+              "command": "cd /Users/Ronaldd.Feliph/ufcg/ciframe && grep -n \"porsequencia\\|Sequência\\|Sequencia\" static/index.html | head -30; echo \"---\"; grep -rn \"when('/\" static/assets/js/app.js static/assets/js/*.js 2>/dev/null | head -20"
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "---\nstatic/assets/js/routes.js:3:    .when('/', {\nstatic/assets/js/routes.js:7:    .when('/poracordes', {\nstatic/assets/js/routes.js:12:    .when('/pormusica', {\nstatic/assets/js/routes.js:17:    .when('/porsequencia', {\nstatic/assets/js/routes.js:22:    .when('/sobre', {\n"
+              }
+            ],
+            "metadata": {
+              "status": "completed",
+              "truncated": false,
+              "exit": 0
+            }
+          },
+          "time": {
+            "created": 1794184187171,
+            "ran": 1794184187567,
+            "completed": 1794184187615
+          }
+        }
+      ],
+      "snapshot": {
+        "start": "2cfc6b87a4fd59d60d13e701b1363017ece70beb",
+        "end": "2cfc6b87a4fd59d60d13e701b1363017ece70beb",
+        "files": []
+      },
+      "finish": "tool-calls",
+      "rawFinish": "tool_calls",
+      "cost": 0,
+      "tokens": {
+        "input": 2427,
+        "output": 105,
+        "reasoning": 55,
+        "cache": {
+          "read": 70462,
+          "write": 0
+        }
+      }
+    },
+    {
+      "id": "msg_1bdb60ef90016J1QmQ24Fm66xT",
+      "time": {
+        "created": 1794184187643,
+        "streamed": 1794184190045,
+        "completed": 1794184190105
+      },
+      "type": "assistant",
+      "agent": "build",
+      "model": {
+        "id": "big-pickle",
+        "providerID": "opencode",
+        "variant": "default"
+      },
+      "content": [
+        {
+          "type": "tool",
+          "id": "call_3ffa562e7e4840e58d33a02e",
+          "name": "shell",
+          "executed": false,
+          "state": {
+            "status": "completed",
+            "input": {
+              "command": "cd /Users/Ronaldd.Feliph/ufcg/ciframe && sed -n '1,80p' static/index.html; echo \"--- routes\"; cat static/assets/js/routes.js"
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "<!DOCTYPE html>\n<html lang=\"pt\" ng-app=\"deciframeApp\">\n<head>\n  <meta charset=\"UTF-8\">\n  <meta http-equiv=\"X-UA-Compatible\" content=\"IE=edge\">\n  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">\n  <meta property=\"og:url\" content=\"http://deciframe.com/\">\n  <meta property=\"og:description\" content=\"Aumente seu repertório musical com o deciframe! Descubra as músicas que você já sabe tocar e ainda não faz ideia.\">\n  <meta property=\"og:image\" content=\"http://deciframe.com/static/assets/img/deciframe.png\">\n  <meta property=\"og:type\" content=\"website\">\n  <meta property=\"og:locale\" content=\"pt_BR\">\n  <title>deciframe</title>\n  <!-- Bootstrap 3.3.6 -->\n  <link rel=\"stylesheet\" href=\"//maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css\" integrity=\"sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7\" crossorigin=\"anonymous\">\n  <!-- External fonts -->\n  <link href=\"//fonts.googleapis.com/css?family=Varela+Round\" rel=\"stylesheet\" type=\"text/css\">\n  <!-- Our stylesheet -->\n  <link rel=\"stylesheet\" href=\"assets/css/app.css\" media=\"screen\">\n  <link rel=\"stylesheet\" href=\"assets/css/icons.css\" media=\"screen\">\n  <link rel=\"icon\" href=\"favicon.ico\" />\n</head>\n<body ng-controller=\"MainController\">\n  <img src=\"http://deciframe.com/static/assets/img/deciframe.png\" alt=\"deciframe\" style=\"display: none\" />\n\n  <script>\n    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){\n    (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),\n    m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)\n    })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');\n    ga('create', 'UA-85286010-1', 'auto');\n    ga('send', 'pageview');\n  </script>\n\n  <nav class=\"navbar navbar-default\">\n    <div class=\"container-fluid\">\n      <ul class=\"nav navbar-nav navbar-right\">\n        <li><a href=\"\" ng-click=\"toggleMenu()\"><df-hex acorde=\"?\" acorde-color=\"#97BF13\" acorde-checked=\"false\" small=\"true\" class=\"navbar-icon\"></df-hex></a></li>\n      </ul>\n      <div class=\"navbar-header\">\n        <a class=\"navbar-brand\" href=\"#/\" ng-hide=\"isActive('/')\">\n          <svg version=\"1.1\" id=\"DECIFRA-ME\" xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\" x=\"0px\" y=\"0px\" viewBox=\"0 0 212.9 37.3\" style=\"enable-background:new 0 0 212.9 37.3;\" xml:space=\"preserve\">\n            <path id=\"E\" class=\"logo-e\" d=\"M210,24c1.6,0,2.9-1.3,2.9-2.9V9.7c0-1.6-1.3-2.9-2.9-2.9h-5.7h-4.9c-1,0-2,0.5-2.5,1.4l-0.5,0.9\n            \tl-2.7,4.6l-0.2,0.4l-3.2,5.6c-0.3,0.4-0.4,0.9-0.4,1.4c0,0.5,0.1,1,0.4,1.4l3.2,5.6l0.2,0.4l0,0l2.6,4.6l0.5,0.9\n            \tc0.5,0.9,1.5,1.4,2.5,1.4h4.9h5.7c1.6,0,2.9-1.3,2.9-2.9c0-1.6-1.3-2.9-2.9-2.9s-2.9-1.3-2.9-2.9C207.1,25.3,208.4,24,210,24z\n            \t M206,18.3c-1.6,0-2.9-1.3-2.9-2.9c0-1.6,1.3-2.9,2.9-2.9c1.6,0,2.9,1.3,2.9,2.9C208.9,17,207.6,18.3,206,18.3z\"></path>\n            <path id=\"M\" class=\"logo-m\" d=\"M189.6,21.1v11.5c0,1.6-1.3,2.9-2.9,2.9h-1.8c-1.6,0-2.9-1.3-2.9-2.9c0-1.6-1.3-2.9-2.9-2.9\n            \tc-1.6,0-2.9,1.3-2.9,2.9c0,1.6-1.3,2.9-2.9,2.9c-1.6,0-2.9-1.3-2.9-2.9c0-1.6-1.3-2.9-2.9-2.9c-1.6,0-2.9,1.3-2.9,2.9\n            \tc0,1.6-1.3,2.9-2.9,2.9h-1.8c-1.6,0-2.9-1.3-2.9-2.9V21.1c0-0.5,0.1-1,0.4-1.4l3.3-5.6l0.1-0.2l3.3-5.7c0.5-0.9,1.5-1.4,2.5-1.4\n            \th13.3c1,0,2,0.5,2.5,1.4l3.3,5.7l0.1,0.2l3.3,5.6C189.4,20.1,189.6,20.6,189.6,21.1z\"></path>\n            <circle id=\"dot\" class=\"logo-dot\" cx=\"154.1\" cy=\"21.1\" r=\"2.9\"></circle>\n            <path id=\"A\" class=\"logo-a\" d=\"M130.8,18.3c-1.6,0-2.9,1.3-2.9,2.9v11.5c0,1.6,1.3,2.9,2.9,2.9h5.7h4.9c1,0,2-0.5,2.5-1.4l0.5-0.9\n            \tl2.7-4.6l0.2-0.4l3.2-5.6c0.3-0.4,0.4-0.9,0.4-1.4c0-0.5-0.1-1-0.4-1.4l-3.2-5.6l-0.2-0.4l0,0l-2.6-4.6l-0.5-0.9\n            \tc-0.5-0.9-1.5-1.4-2.5-1.4h-4.9h-5.7c-1.6,0-2.9,1.3-2.9,2.9c0,1.6,1.3,2.9,2.9,2.9s2.9,1.3,2.9,2.9C133.7,17,132.4,18.3,130.8,18.3\n            \tz M134.7,24c1.6,0,2.9,1.3,2.9,2.9c0,1.6-1.3,2.9-2.9,2.9c-1.6,0-2.9-1.3-2.9-2.9C131.9,25.3,133.2,24,134.7,24z\"></path>\n            <path id=\"R\" class=\"logo-r\" d=\"M127.6,9.5c0,0,0-0.1,0-0.1c0-0.1,0-0.2,0-0.3c0,0,0-0.1,0-0.1c0,0,0-0.1,0-0.1c0,0,0-0.1,0-0.1\n            \tc0,0,0-0.1,0-0.1c-0.1-0.1-0.1-0.3-0.2-0.4c0,0,0-0.1-0.1-0.1c0,0,0-0.1-0.1-0.1c0,0-0.1-0.1-0.1-0.1c0,0-0.1-0.1-0.1-0.1\n            \tc0,0-0.1-0.1-0.1-0.1c0,0,0,0,0,0c0,0-0.1-0.1-0.1-0.1c0,0-0.1-0.1-0.1-0.1c0,0-0.1-0.1-0.1-0.1c0,0-0.1,0-0.1-0.1\n            \tc0,0-0.1-0.1-0.1-0.1c0,0-0.1,0-0.1-0.1c-0.1,0-0.1-0.1-0.2-0.1c0,0-0.1,0-0.1,0c0,0,0,0,0,0c0,0-0.1,0-0.1,0c0,0-0.1,0-0.1,0\n            \tc0,0-0.1,0-0.1,0c0,0,0,0,0,0c0,0-0.1,0-0.1,0c-0.1,0-0.1,0-0.2,0c0,0-0.1,0-0.1,0c0,0-0.1,0-0.1,0c0,0-0.1,0-0.1,0c0,0,0,0-0.1,0\n            \tc0,0-0.1,0-0.1,0h-2.9h-3.8h-6.6c-1.6,0-2.9,1.3-2.9,2.9v23c0,1.6,1.3,2.9,2.9,2.9h0h7.5c0.6,0,1.2-0.2,1.7-0.6\n            \tc0.7-0.5,1.2-1.4,1.2-2.3v-5.7V15.6v-0.2c0-1.6,1.3-2.9,2.9-2.9c1.6,0,2.9-1.3,2.9-2.9C127.6,9.6,127.6,9.5,127.6,9.5z\"></path>\n            <path id=\"F\" class=\"logo-r\" d=\"M108.2,21.1c0,1.5-1.2,2.8-2.7,2.9h0c0,0-0.1,0-0.1,0c0,0,0,0,0,0c-1.6,0-2.8,1.3-2.8,2.9v5.7\n            \tc0,0.9-0.5,1.8-1.2,2.3c-0.5,0.4-1.1,0.6-1.7,0.6h-7.5c-1.6,0-2.9-1.3-2.9-2.9V21.1h0c0-0.5,0.1-1,0.4-1.4l6.6-11.5\n            \tc0.5-0.9,1.5-1.4,2.5-1.4h6.6c0,0,0.1,0,0.1,0c0,0,0,0,0.1,0c0,0,0.1,0,0.1,0c0,0,0.1,0,0.1,0c0,0,0.1,0,0.1,0c0.1,0,0.1,0,0.2,0\n            \tc0,0,0.1,0,0.1,0c0,0,0,0,0,0c0,0,0.1,0,0.1,0c0,0,0.1,0,0.1,0c0,0,0.1,0,0.1,0c0,0,0,0,0,0c0,0,0.1,0,0.1,0c0.1,0,0.1,0.1,0.2,0.1\n            \tc0,0,0.1,0,0.1,0.1c0,0,0.1,0.1,0.1,0.1c0,0,0.1,0,0.1,0.1c0,0,0.1,0.1,0.1,0.1c0,0,0.1,0.1,0.1,0.1c0,0,0.1,0.1,0.1,0.1\n            \tc0,0,0,0,0,0c0,0,0.1,0.1,0.1,0.1c0,0,0.1,0.1,0.1,0.1c0,0,0.1,0.1,0.1,0.1c0,0,0,0.1,0.1,0.1c0,0,0,0.1,0.1,0.1\n            \tc0.1,0.1,0.1,0.3,0.2,0.4c0,0,0,0.1,0,0.1c0,0,0,0.1,0,0.1c0,0,0,0.1,0,0.1c0,0,0,0.1,0,0.1c0,0.1,0,0.2,0,0.3c0,0,0,0.1,0,0.1\n            \tc0,0.1,0,0.1,0,0.2c0,1.6-1.3,2.9-2.9,2.9c-1.6,0-2.9,1.3-2.9,2.9c0,1.6,1.3,2.9,2.9,2.9C107,18.3,108.2,19.6,108.2,21.1z\"></path>\n            <path id=\"I\" class=\"logo-i\" d=\"M86,6.8h-7.5c-1.6,0-2.9,1.3-2.9,2.9v23c0,1.6,1.3,2.9,2.9,2.9H86c1.6,0,2.9-1.3,2.9-2.9v-23\n            \tC88.9,8.1,87.6,6.8,86,6.8z\"></path>\n            <circle id=\"dot1\" class=\"logo-dot1\" cx=\"82.3\" cy=\"2.9\" r=\"2.9\"></circle>\n            <path id=\"C\" class=\"logo-c\" d=\"M69.6,21.1c0,1.6,1.3,2.9,2.9,2.9c0,0,0,0,0,0c1.6,0,2.8,1.3,2.8,2.9v5.7c0,1.6-1.3,2.9-2.9,2.9H61.8\n            \tc-1,0-2-0.5-2.5-1.4l-0.5-0.9l-2.6-4.6l0,0l-0.2-0.4l-3.2-5.6c-0.3-0.4-0.4-0.9-0.4-1.4c0-0.5,0.1-1,0.4-1.4l0.8-1.4l2.4-4.2\n            \tl0.2-0.4l2.7-4.6l0.5-0.9c0.5-0.9,1.5-1.4,2.5-1.4h10.6c1.6,0,2.9,1.3,2.9,2.9v5.7c0,1.6-1.3,2.9-2.9,2.9\n            \tC70.9,18.3,69.6,19.5,69.6,21.1z\"></path>\n            <path id=\"E_1_\" class=\"logo-e1\" d=\"M49.1,24c1.6,0,2.9-1.3,2.9-2.9V9.7c0-1.6-1.3-2.9-2.9-2.9h-5.7h-4.9c-1,0-2,0.5-2.5,1.4l-0.5,0.9\n            \tl-2.7,4.6l-0.2,0.4l-3.2,5.6c-0.3,0.4-0.4,0.9-0.4,1.4c0,0.5,0.1,1,0.4,1.4l3.2,5.6l0.2,0.4l0,0l2.6,4.6l0.5,0.9\n            \tc0.5,0.9,1.5,1.4,2.5,1.4h4.9h5.7c1.6,0,2.9-1.3,2.9-2.9c0-1.6-1.3-2.9-2.9-2.9s-2.9-1.3-2.9-2.9C46.3,25.3,47.5,24,49.1,24z\n            \t M45.2,18.3c-1.6,0-2.9-1.3-2.9-2.9c0-1.6,1.3-2.9,2.9-2.9c1.6,0,2.9,1.3,2.9,2.9C48,17,46.8,18.3,45.2,18.3z\"></path>\n--- routes\nangular.module('deciframeApp').config(function($routeProvider) {\n  $routeProvider\n    .when('/', {\n      templateUrl: \"templates/home.html\",\n      controller: \"HomeController\"\n    })\n    .when('/poracordes', {\n      templateUrl: \"templates/acordes.html\",\n      controller: \"AcordesController\",\n      controllerAs: \"Chords\"\n    })\n    .when('/pormusica', {\n      templateUrl: \"templates/musica.html\",\n      controller: \"MusicaController\",\n      controllerAs: \"Musica\"\n    })\n    .when('/porsequencia', {\n      templateUrl: \"templates/sequencia.html\",\n      controller: \"SequenciaController\",\n      controllerAs: \"Sequencia\"\n    })\n    .when('/sobre', {\n      templateUrl: \"templates/about.html\",\n      controller: \"AboutController\"\n    })\n    .otherwise({\n      redirectTo: '/'\n    });\n});\n"
+              }
+            ],
+            "metadata": {
+              "status": "completed",
+              "truncated": false,
+              "exit": 0
+            }
+          },
+          "time": {
+            "created": 1794184190030,
+            "ran": 1794184190044,
+            "completed": 1794184190084
+          }
+        }
+      ],
+      "snapshot": {
+        "start": "2cfc6b87a4fd59d60d13e701b1363017ece70beb",
+        "end": "2cfc6b87a4fd59d60d13e701b1363017ece70beb",
+        "files": []
+      },
+      "finish": "tool-calls",
+      "rawFinish": "tool_calls",
+      "cost": 0,
+      "tokens": {
+        "input": 387,
+        "output": 77,
+        "reasoning": 0,
+        "cache": {
+          "read": 72760,
+          "write": 0
+        }
+      }
+    },
+    {
+      "id": "msg_1bdb6189d0011djCl3o7kHElF0",
+      "time": {
+        "created": 1794184190111,
+        "streamed": 1794184193188,
+        "completed": 1794184193245
+      },
+      "type": "assistant",
+      "agent": "build",
+      "model": {
+        "id": "big-pickle",
+        "providerID": "opencode",
+        "variant": "default"
+      },
+      "content": [
+        {
+          "type": "reasoning",
+          "text": "Need to know how navigation to porsequencia works: MainController toggleMenu, menu items in index.html. Let me grep for `porsequencia` across static.",
+          "native": {
+            "reasoningField": "reasoning_content"
+          },
+          "time": {
+            "created": 1794184192599,
+            "completed": 1794184193184
+          }
+        },
+        {
+          "type": "tool",
+          "id": "call_bbdf6b46acdd448f9b0e412c",
+          "name": "shell",
+          "executed": false,
+          "state": {
+            "status": "completed",
+            "input": {
+              "command": "cd /Users/Ronaldd.Feliph/ufcg/ciframe && grep -rn \"porsequencia\\|poracordes\\|pormusica\" static/index.html static/templates/home.html static/assets/js/controllers/main.js 2>/dev/null | head -20"
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "static/templates/home.html:61:        <a href=\"#/poracordes\">\nstatic/templates/home.html:70:        <a href=\"#/pormusica\">\nstatic/templates/home.html:79:        <a href=\"#/porsequencia\">\n"
+              }
+            ],
+            "metadata": {
+              "status": "completed",
+              "truncated": false,
+              "exit": 0
+            }
+          },
+          "time": {
+            "created": 1794184192857,
+            "ran": 1794184193187,
+            "completed": 1794184193220
+          }
+        }
+      ],
+      "snapshot": {
+        "start": "2cfc6b87a4fd59d60d13e701b1363017ece70beb",
+        "end": "2cfc6b87a4fd59d60d13e701b1363017ece70beb",
+        "files": []
+      },
+      "finish": "tool-calls",
+      "rawFinish": "tool_calls",
+      "cost": 0,
+      "tokens": {
+        "input": 5189,
+        "output": 93,
+        "reasoning": 34,
+        "cache": {
+          "read": 73018,
+          "write": 0
+        }
+      }
+    },
+    {
+      "id": "msg_1bdb624e1001hUg1ciqhEyKoZt",
+      "time": {
+        "created": 1794184193251,
+        "streamed": 1794184198987,
+        "completed": 1794184199025
+      },
+      "type": "assistant",
+      "agent": "build",
+      "model": {
+        "id": "big-pickle",
+        "providerID": "opencode",
+        "variant": "default"
+      },
+      "content": [
+        {
+          "type": "reasoning",
+          "text": "Home page cards link to routes. Navigation: from home, click the card \"Por sequência\" (Sequência famosa?). Let me read home.html around 55-90 to know the label.",
+          "native": {
+            "reasoningField": "reasoning_content"
+          },
+          "time": {
+            "created": 1794184198573,
+            "completed": 1794184198984
+          }
+        },
+        {
+          "type": "tool",
+          "id": "call_c8d5ec1bab2049e2a8b74e3a",
+          "name": "shell",
+          "executed": false,
+          "state": {
+            "status": "completed",
+            "input": {
+              "command": "cd /Users/Ronaldd.Feliph/ufcg/ciframe && sed -n '50,95p' static/templates/home.html"
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "              <path id=\"D\" class=\"logo-d-color\" d=\"M28.7,14.5v13.3c0,1-0.5,2-1.4,2.5l-5.7,3.3l-0.2,0.1l-5.6,3.3c-0.4,0.3-0.9,0.4-1.4,0.4H2.9\n              \tC1.3,37.3,0,36,0,34.4v-7.5C0,25.3,1.3,24,2.8,24c0,0,0,0,0,0c1.6,0,2.9-1.3,2.9-2.9c0-1.6-1.3-2.9-2.9-2.9S0,17,0,15.4V7.9\n              \tC0,6.3,1.3,5,2.9,5h11.5c0.5,0,1,0.1,1.4,0.4l5.6,3.3l0.2,0.1l5.7,3.3C28.2,12.5,28.7,13.5,28.7,14.5z\"></path>\n            </svg>\n          </div>\n        </div>\n      </div>\n    </div>\n    <div class=\"col-sm-4 viewWindow-panel viewWindow-subpanel viewWindow-panel-F text-center\">\n\n      <div class=\"vertical-panel-container\">\n        <a href=\"#/poracordes\">\n          <div class=\"vertical-panel-wrap\">\n            <div class=\"vertical-panel vertical-panel-A\">\n              <button class=\"btn-link btn-lg\">Quais acordes você conhece?</button>\n            </div>\n          </div>\n        </a>\n      </div>\n      <div class=\"vertical-panel-container\">\n        <a href=\"#/pormusica\">\n          <div class=\"vertical-panel-wrap\">\n            <div class=\"vertical-panel vertical-panel-B\">\n              <button class=\"btn-link btn-lg\">Quais músicas você sabe tocar?</button>\n            </div>\n          </div>\n        </a>\n      </div>\n      <div class=\"vertical-panel-container\">\n        <a href=\"#/porsequencia\">\n          <div class=\"vertical-panel-wrap\">\n            <div class=\"vertical-panel vertical-panel-C\">\n              <button class=\"btn-link btn-lg\">Conheces alguma dessas sequências de acordes?</button>\n            </div>\n          </div>\n        </a>\n      </div>\n\n    </div>\n  </div>\n</div>\n"
+              }
+            ],
+            "metadata": {
+              "status": "completed",
+              "truncated": false,
+              "exit": 0
+            }
+          },
+          "time": {
+            "created": 1794184198806,
+            "ran": 1794184198986,
+            "completed": 1794184199007
+          }
+        }
+      ],
+      "snapshot": {
+        "start": "2cfc6b87a4fd59d60d13e701b1363017ece70beb",
+        "end": "2cfc6b87a4fd59d60d13e701b1363017ece70beb",
+        "files": []
+      },
+      "finish": "tool-calls",
+      "rawFinish": "tool_calls",
+      "cost": 0,
+      "tokens": {
+        "input": 322,
+        "output": 66,
+        "reasoning": 41,
+        "cache": {
+          "read": 78078,
+          "write": 0
+        }
+      }
+    },
+    {
+      "id": "msg_1bdb63b76001OaAAXgFRGJKtzP",
+      "time": {
+        "created": 1794184199031,
+        "streamed": 1794184212258,
+        "completed": 1794184215549
+      },
+      "type": "assistant",
+      "agent": "build",
+      "model": {
+        "id": "big-pickle",
+        "providerID": "opencode",
+        "variant": "default"
+      },
+      "content": [
+        {
+          "type": "reasoning",
+          "text": "Good. Now let me figure out expected results for the demo: The 6 sequences and their counts: Bm-G-D-A → 199; C-G-Am-F → 296; Em-G → 4; C-A7-Dm-G7 → 5; Gm-F → 7; C-C7-F-Fm → 3.\n\nFor a custom sequence demo, pick a famous sequence not among the 6 that yields results. SEQUENCIA_NOVA = Am, F, C, G is a test sequence that matches some musics (test asserts non-empty). How many? Let me count for the demo, to give the user expected numbers. Also choose a nice name like \"Progressão pop (Am-F-C-G)\". Let's compute counts for candidate sequences using the rule. Also show the duplicate 409 flow. And persistence across restart (but in a video maybe show restart of container? Could be too long; the requirimento says persistence in DB. The video should show feature working in browser primarily. A short terminal shot proving persistence after `docker restart` is a strong plus.)\n\nThe user said: \"você vai criar um roteiro para mostrar a nova funcionalidade pois eu vou gravar.\" So deliver a recording script (roteiro) with steps, what to say, exact timings, expected values, and a checklist. Should I also prepare the demo environment? I can compute counts and give exact commands. Maybe create a file `docs/features/sequencias-customizadas/05-roteiro-video.md`.\n\nAlso possibly pre-record data state: The demo should start with clean DB (6 seeds) to show \"6 sequences → register 7th\". Provide command to reset: `docker rm -f ciframe-demo; docker volume rm ciframe-demo-data; docker run ...` or use a bind mount for easy reset. AGENTS suggests bind mount `-v \"$PWD/var:/data\"`. For the video, simplest reproducible: `docker run --rm -v \"$PWD/var:/data\" -p 8080:8080 ciframe` but `var/` may contain a catalogo.db from earlier local runs (gitignored). Check `var/` existence. For clean start, `rm -f var/catalogo.db*`.\n\nWait: the image is built already. But the user will record; do they need to rebuild? The image `ciframe:latest` exists now; but from a clean machine, `docker build -t ciframe .`. Provide both.\n\nAlternatively run locally with venv `python main.py` on :5000 — simpler and no Docker. But persistence demo needs restart of server, which is easy: Ctrl+C and `python main.py` again; DB at var/catalogo.db survives. The requirement mentions container, but the video only needs browser. Persistence across server restart can be shown with local server too. Docker restart is more faithful. Hmm.\n\nThe roteiro should be practical: I'd recommend Docker with named volume `ciframe-demo-data`, because it demonstrates the container persistence requirement, and the image is ready. But recording in browser + terminal switching adds friction. Could show persistence at the end with a quick terminal cut.\n\nLet me compute matching counts for candidate custom sequences to give expected results:\n\n- Am-F-C-G (test says non-empty). Count?\n- Maybe a nicer example: \"G D Em C\" (very common), \"C G Am F\" is already a seed (296). \"Em C G D\" — axis progression. Need count.\n\nLet me compute counts for several candidates and pick one with a good number (e.g., 20-100) so the UI shows a satisfying grid. Page size 100.\n\nAlso verify registration of a duplicate shows the \"Essa sequência já existe; selecionando a cadastrada.\" message. Good demo beat.\n\nAlso show legacy URL `?sequencia=BmGDA`? Not needed in the browser; could mention as a subtle robustness point via terminal curl.\n\nVideo length: ~2–3 minutes. Roteiro with time budget:\n0:00–0:15 Intro (home, click \"Conheces alguma dessas sequências de acordes?\")\n0:15–0:40 Show catalog: 6 sequences now from backend; click one (Bm-G-D-A) → results ~199, explain matching (contiguous window + vocabulary) and \"Encontrei essas músicas\".\n0:40–1:20 Register new sequence: type chords \"G D Em C\" and name \"Progressão pop (G-D-Em-C)\" → click Cadastrar → catalog refreshes with 7th selected and results appear + success message.\n1:20–1:45 Show new sequence in catalog across reload (F5) → still there.\n1:45–2:10 Duplicate: register \"g d em c\" (lowercase) → message \"Essa sequência já existe; selecionando a cadastrada.\" and same results (proves case-insensitive dedupe).\n2:10–2:40 Persistence: terminal `docker restart ciframe-demo`, back to browser F5, catalog still has 7 (proves DB).\n2:40–3:00 Optional: GitHub/ADR/plan/test report scroll? The deliverable video is feature demo; keep optional.\n\nActually the enunciado requires video/gif demonstrating the feature working in browser. Include only browser; terminal optional at end.\n\nNow compute count for \"G D Em C\" and other candidates, and also check whether \"G D Em C\" query results show. Let me run a quick script using the loaded dataset.\n\nCandidates: \n- G D Em C (I–V–vi–IV in G)\n- Am F C G\n- Em C G D\n- D A Bm G\n- C G Am F is seed.\n\nCompute with matching.casa across all musics.",
+          "native": {
+            "reasoningField": "reasoning_content"
+          },
+          "time": {
+            "created": 1794184201665,
+            "completed": 1794184212252
+          }
+        },
+        {
+          "type": "tool",
+          "id": "call_eeb74a22c38f452a8034f3b2",
+          "name": "shell",
+          "executed": false,
+          "state": {
+            "status": "completed",
+            "input": {
+              "command": "cd /Users/Ronaldd.Feliph/ufcg/ciframe && CIFRAME_DB=$(mktemp -d)/cat.db .venv/bin/python - <<'PY'\nimport main\nfrom matching import casa, prepara_alvo\ncands = [\n    ['G','D','Em','C'],\n    ['Am','F','C','G'],\n    ['Em','C','G','D'],\n    ['D','A','Bm','G'],\n    ['C','G','Am','F'],\n]\nfor seq in cands:\n    alvo_norm, alvo_set = prepara_alvo(seq)\n    n = sum(1 for m in main.musicas.values()\n            if casa(m.cifra_norm, m.acordes_norm, alvo_norm, alvo_set))\n    exemplo = next((m for m in main.musicas.values()\n                    if casa(m.cifra_norm, m.acordes_norm, alvo_norm, alvo_set)), None)\n    print('%-18s %3d musicas  ex.: %s - %s' % (' '.join(seq), n, exemplo.nome_musica, exemplo.nome_artista))\nPY",
+              "timeout": 180000
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "G D Em C           252 musicas  ex.: O Passageiro - Capital Inicial\nAm F C G           278 musicas  ex.: A Casa Caiu - Fernando e Sorocaba\nEm C G D           220 musicas  ex.: O Passageiro - Capital Inicial\nD A Bm G           216 musicas  ex.: À Sua Maneira - Capital Inicial\nC G Am F           296 musicas  ex.: A Casa Caiu - Fernando e Sorocaba\n"
+              }
+            ],
+            "metadata": {
+              "status": "completed",
+              "truncated": false,
+              "exit": 0
+            }
+          },
+          "time": {
+            "created": 1794184210967,
+            "ran": 1794184212256,
+            "completed": 1794184215533
+          }
+        }
+      ],
+      "snapshot": {
+        "start": "2cfc6b87a4fd59d60d13e701b1363017ece70beb",
+        "end": "2cfc6b87a4fd59d60d13e701b1363017ece70beb",
+        "files": []
+      },
+      "finish": "tool-calls",
+      "rawFinish": "tool_calls",
+      "cost": 0,
+      "tokens": {
+        "input": 859,
+        "output": 313,
+        "reasoning": 1240,
+        "cache": {
+          "read": 78270,
+          "write": 0
+        }
+      }
+    },
+    {
+      "id": "msg_1bdb67c03001b3Baw8mblhyEWN",
+      "time": {
+        "created": 1794184215556,
+        "streamed": 1794184244717,
+        "completed": 1794184244780
+      },
+      "type": "assistant",
+      "agent": "build",
+      "model": {
+        "id": "big-pickle",
+        "providerID": "opencode",
+        "variant": "default"
+      },
+      "content": [
+        {
+          "type": "reasoning",
+          "text": "\"G D Em C\" → 252 musics; good demo (3 pages: 100/100/52). Note first page shows 100; the count is only visible via pagination? The UI shows \"Encontrei essas músicas\" and a grid of 100 cards (no total count). Actually `ng-repeat` over `vm.musics` which is page 1 only (no pagination UI in the sequence controller). So the video shows ~100 cards.\n\nBetter to mention \"100 músicas na primeira página (252 no total)\" in the roteiro as a fact we can assert in terminal, but the video doesn't need numbers. Hmm, the UI shows only the first page without pagination controls — that's a pre-existing limitation. For the roteiro, avoid claiming counts visible.\n\nFor duplicates: register \"G D Em C\" named, then try \"g d em c\" → 409 → UI selects existing. Note: after duplicate, `pesquisarPorSequencia` runs on existing → results.\n\nNow: the UI requires one input for chords separated by commas/spaces. The user types \"G, D, Em, C\" and name \"Progressão pop (G-D-Em-C)\". Wait: `valida_sequencia` forbids `;` and `,` inside each chord, fine. `separarAcordes` splits on whitespace/commas. Good.\n\nPotential issue: if the user types \"G D Em C\" and name field, payload chords = ['G','D','Em','C']. Good.\n\nAlso demo the persistence: The named volume command. Let me define exact commands:\n\n```bash\ndocker build -t ciframe .          # se a imagem ainda não existir\ndocker rm -f ciframe-demo 2>/dev/null\ndocker volume rm ciframe-demo-data 2>/dev/null   # começa limpo, só com as 6\ndocker run -d --name ciframe-demo \\\n  -v ciframe-demo-data:/data -p 8080:8080 ciframe\n```\n\nThen open http://localhost:8080/#/porsequencia.\n\nWait for boot: `curl http://localhost:8080/sequencias` returns 6.\n\nAfter registering, restart: `docker restart ciframe-demo`. Then F5.\n\nCleanup: `docker rm -f ciframe-demo; docker volume rm ciframe-demo-data`.\n\nAlternative if the user prefers venv:\n```bash\nrm -f var/catalogo.db var/catalogo.db-shm var/catalogo.db-wal\npython main.py   # :5000\n```\nURL http://localhost:5000/#/porsequencia. Restart = Ctrl+C + rerun. Simpler for recording, no Docker startup wait. But it doesn't demonstrate container persistence; the feature still persists in SQLite. I'd recommend Docker for faithfulness to the delivery (\"feature funcionando... rodando via Dockerfile\"). Use local venv as fallback Plan B.\n\nCheck: does the UI bind to relative URLs (`$http.get('sequencias')`)? With URL `/#/porsequencia`, base path `/`, so relative \"sequencias\" resolves to `/sequencias`. Good. With `http://localhost:8080/#/porsequencia` works.\n\nAlso verify the routes with a quick browser? Can't. But phase 4 had headless Chrome render validation. Fine.\n\nPotential gotcha for recording: AngularJS templates loaded via relative `templates/...` from index at `/`. Good.\n\nAnother demo detail: catalog shows 6 sequences: names \"Sequência de Bm\", \"Sequência de C\", \"Sequência Em\", \"Sequência de C (Samba)\", \"Sequência de Gm\", \"Sequência de C (Samba cont.)\". The template displays name below hexes. In the video, show all 6 including the new ones that weren't in the old frontend (Em-G and C-A7-Dm-G7), which is a required fix (\"frontend mostrava só 4\"). Nice beat to call out.\n\nAlso mention that after registering, the new one is automatically selected and searched (`carregarCatalogo(corpo(resposta).id)` triggers `pesquisarPorSequencia`). Good.\n\nNarration should be natural Brazilian Portuguese, short sentences. Provide a table with time, screen action, narration. Provide \"checklist antes de gravar\" (image built, clean DB, browser zoom 100%, maybe hide bookmarks, resolution 1280x720/1920x1080, no notifications).\n\nAlso \"erros comuns\" (avoid): don't type invalid sequence with 13 chords; don't reload mid-registration; wait loading text; port 8080 free.\n\nShould the roteiro include exact expected values:\n- initial catalog: 6 sequences\n- click \"Sequência de Bm\" (Bm-G-D-A) → results grid (199 total, 100 on first page)\n- register \"G, D, Em, C\" named \"Progressão pop\" → 7 sequences; success message; grid with ~100 cards (252 total)\n- F5 → still 7\n- duplicate \"g d em c\" → yellow success-style message \"Essa sequência já existe; selecionando a cadastrada.\" (it's an alert-success, ironically) and same results\n- restart → still 7\n\nCareful: after registering 7th, `vm.carregarCatalogo(id)` triggers search; the grid shows 100 cards; the \"Encontrei essas músicas\" button appears. Good.\n\nOne more thing: when clicking a sequence in the catalog, `ng-click` triggers. Keyboard support now exists but not needed in video.\n\nTerminal optional segment: show `curl 'http://localhost:8080/sequencias' | python3 -m json.tool` after restart? Nice to prove 7 in DB. But requires json.tool; fine.\n\nVideo/gif format: record at 1080p or 720p, 30fps; keep under 3 min. Mention ffmpeg conversion to gif? The deliverable says video/gif. Provide optional command: `ffmpeg -i demo.mov -vf \"fps=12,scale=960:-1\" demo.gif`? Not necessary but helpful. Keep short.\n\nFilename suggestion: `demo-sequencias-customizadas.mp4` in the feature dir? The parallel branch has that. The user will record; suggest saving as `docs/features/sequencias-customizadas/demo-sequencias-customizadas.mp4` and committing. But mp4 in git can be large; the enunciado asks to deliver on fork, so commit it (the other branch did). Suggest ≤ 20 MB, or a GIF. Add note about `git add`.\n\nNow, where to write the roteiro: `docs/features/sequencias-customizadas/05-roteiro-video.md`. The existing files are 00-enunciado, 01-research, 02-proposal, 03-plan, 04-test-report. `05-roteiro-video.md` fits.\n\nThen export the session (after writing? The export captures current conversation; do it at the end as user asked: \"após isso pode exportar a sessão e dar commit\"). So: write file, commit? The user says: create roteiro; after that export session and commit. So create file, export session, commit both, push (they didn't explicitly say push this time, but consistency—they said \"dar commit\"; earlier we pushed. I'll push too; harmless and expected). Actually \"após isso pode exportar a sessão e dar commit\" — commit. I'll push as well since everything is on the remote; mention it.\n\nLet me verify the exact UI texts for narration:\n- Page heading: \"Aponte uma sequencia de acordes\" (no accent: \"sequencia\").\n- Under form: \"Cadastrar nova sequência\", placeholders \"Acordes (ex.: Am, F, C, G)\" and \"Nome (opcional)\", button \"Cadastrar\"/\"Cadastrando...\".\n- Success: \"Sequência cadastrada!\"\n- Duplicate: \"Essa sequência já existe; selecionando a cadastrada.\"\n- Error: \"Não foi possível cadastrar a sequência.\" (generic)\n- After search: \"Encontrei essas músicas\" and button \"Encontrei essas músicas\" scrolls to results.\n- Loading: \"Carregando sequências...\"\n- Music cards show title/artist/genre.\n\nFor persistence demo: `docker restart ciframe-demo` takes a few seconds; after F5, catalog shows 7. Note the page loads catalog on controller init.\n\nTiming: fit ~2:30.\n\nLet me also compute: after clicking Bm sequence, the first page grid has 100 cards; the \"Encontrei essas músicas\" scroll button. The card list might be long to scroll; only scroll a bit.\n\nRoteiro should include \"fala\" (narration) as código/person block per beat. Keep it concise but complete.\n\nAlso: what about the \"novo deploy\" requirement — \"crescer sem precisar de novo deploy\". Could be narrated when registering: \"sem alterar código nem reiniciar\".\n\nAlso mention the API being called (DevTools optional): open Network tab? Might clutter. Optional beat: show `GET /sequencias` and `GET /similares?sequencia_id=7` in DevTools Network to prove backend. Could be a nice 10s for the \"full-stack\" evaluation. But video primarily browser. I'll add as optional.\n\nImportant detail: the new sequence's id will be 7 if DB is clean. If the user registers more before recording, id varies. Roteiro says start clean.\n\nAlso, since names include accents and the database stores utf-8, fine.\n\nNow write the file.\n\nStructure:\n\n# Roteiro do vídeo — Sequências de Acordes Customizadas\n\n## Antes de gravar (checklist)\n- clean state commands\n- build\n- verify 6\n- browser setup\n- recording tips\n\n## Preparação (fora do vídeo)\ncommands\n\n## Roteiro (2min30)\nTable or numbered beats with time, tela/ação, fala, resultado esperado.\n\nI'll use sections per beat with **Tela** / **Fala** / **Resultado esperado** and timestamps. A table risks unreadable long text; use beat blocks.\n\nBeats:\n1. 0:00–0:15 Abertura: home page, click \"Conheces alguma dessas sequências de acordes?\".\n   Fala: \"O deciframe agora permite cadastrar sequências de acordes e buscar músicas por elas. Vou mostrar a página Por Sequência.\"\n2. 0:15–0:35 Catálogo real (6): highlight grid, including Em-G and C-A7-Dm-G7.\n   Fala: \"Antes o frontend tinha quatro sequências fixas em JavaScript; agora ele carrega o catálogo do backend, com as seis originais. As duas que não apareciam antes, Em-G e C-A7-Dm-G7, agora aparecem.\"\n3. 0:35–1:00 Buscar por uma original: click \"Sequência de Bm\" (Bm-G-D-A).\n   Fala: \"Ao clicar, a busca é feita em tempo real pela cifra das músicas: a sequência precisa aparecer na ordem, numa janela contígua, e a música não pode ter acordes fora dela. Isso reproduz os 199 resultados da tag original.\"\n   Result: grid with cards; \"Encontrei essas músicas\".\n4. 1:00–1:35 Cadastrar: type \"G, D, Em, C\", name \"Progressão pop (G-D-Em-C)\", click Cadastrar.\n   Fala: \"Qualquer visitante pode cadastrar, sem login. Digito a sequência na ordem e um nome opcional.\"\n   Result: success \"Sequência cadastrada!\", seventh item in catalog selected, results appear.\n5. 1:35–1:50 Nova sequência nos resultados: scroll grid briefly / click \"Encontrei essas músicas\".\n   Fala: \"A sequência nova já entra no catálogo e a busca roda nela na hora.\"\n6. 1:50–2:10 Duplicata: type \"g d em c\" (lowercase, no name), Cadastrar.\n   Fala: \"O cadastro normaliza maiúsculas/minúsculas e espaços. Se a sequência já existe, nada é duplicado: o app avisa e seleciona a existente.\"\n   Result: message \"Essa sequência já existe; selecionando a cadastrada.\" and results for the same sequence; catalog still 7.\n7. 2:10–2:35 Persistência: switch terminal `docker restart ciframe-demo`, wait, back to browser, F5.\n   Fala: \"O catálogo fica num SQLite dentro do volume Docker. Reiniciando o container, a sequência continua lá.\"\n   Result: 7 sequences after reload.\n8. 2:35–2:50 Fechamento: F5 already done; maybe show `curl` with 7 or just conclude.\n   Fala: \"Tudo isso sem alterar o CSV de músicas e sem novo deploy.\"\n   End.\n\nOptional extras (if time):\n- DevTools Network showing /sequencias and /similares?sequencia_id=7.\n- Legacy URL `?sequencia=BmGDA`.\n- Keyboard navigation.\n\nAfter recording:\n- save file, check size, commit command\n- gif conversion optional.\n\nAdd \"Plano B (sem Docker)\" with venv commands and note URL :5000.\n\nAlso note: `docker restart` will keep the volume; but if the user started with `--rm` + named volume, fine.\n\nAlso provide exact expected values:\n- click Bm → 199 total (100 na primeira página)\n- new G-D-Em-C → 252 total (100 na primeira página)\n- duplicate → same 252; catalog 7.\n- State persists after restart.\n\nWait: does the UI show page 1 only? Yes. So saying \"199\" in narration is about the backend test; visually only 100 cards. To avoid mismatch, phrase: \"a busca devolve as mesmas 199 músicas do teste de regressão — a interface mostra as 100 primeiras\". Good, honest.\n\nAlso one more verification: after registering \"G, D, Em, C\", the values in the input include commas. `separarAcordes` splits on `[\\s,]+`. Good. The demo narration can say \"separados por vírgula ou espaço\".\n\nPotential pitfall: The form's submit button is disabled while `!vm.novaSequencia.acordes`. Fine.\n\nAnother pitfall: `ng-disabled` uses `!Sequencia.novaSequencia.acordes` — empty string disabled.\n\nShould the user speak? They said \"vou gravar\" — likely screen recording with narration. Provide \"fala sugerida\" but note they can adapt.\n\nI also want to give exact commands to reset and verify. Include:\n\n```bash\n# limpa qualquer estado anterior\ndocker rm -f ciframe-demo 2>/dev/null || true\ndocker volume rm ciframe-demo-data 2>/dev/null || true\n\n# imagem já construída nesta sessão; se precisar:\ndocker build -t ciframe .\n\ndocker run -d --name ciframe-demo \\\n  -v ciframe-demo-data:/data \\\n  -p 8080:8080 ciframe\n\n# espera subir e confere as 6 originais\nuntil curl -fsS http://localhost:8080/sequencias >/dev/null; do sleep 1; done\ncurl -s http://localhost:8080/sequencias | python3 -c \"import json,sys; print(len(json.load(sys.stdin)), 'sequencias')\"\n```\n\nHmm the `until` with curl -f fails until ready. OK.\n\nAlso ensure port 8080 free (`lsof -iTCP:8080`).\n\nAfter recording cleanup:\n```bash\ndocker rm -f ciframe-demo\ndocker volume rm ciframe-demo-data\n```\n\nAdd note: if using `ciframe-data` volume from AGENTS, still fine, but demo volume name isolates.\n\nAlso, before recording, verify browser rendering: `http://localhost:8080/#/porsequencia` and hard refresh; if CSS from CDN fails, no layout. Note require internet for Bootstrap/fonts CDN (app loads from CDN!). Important gotcha: static/index.html loads Bootstrap CSS from maxcdn and Google Fonts; the app itself works without internet but looks broken. Mention \"precisa de internet para o CSS do Bootstrap/fontes do CDN\".\n\nAlso jQuery/Angular from CDN? Check index.html bottom scripts.",
+          "native": {
+            "reasoningField": "reasoning_content"
+          },
+          "time": {
+            "created": 1794184217870,
+            "completed": 1794184244712
+          }
+        },
+        {
+          "type": "tool",
+          "id": "call_47e0ceb013f64be3bcd2cf54",
+          "name": "shell",
+          "executed": false,
+          "state": {
+            "status": "completed",
+            "input": {
+              "command": "cd /Users/Ronaldd.Feliph/ufcg/ciframe && grep -n \"<script\" static/index.html | head -20"
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "25:  <script>\n126:  <script src=\"//ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js\"></script>\n128:  <script src=\"//maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js\" integrity=\"sha384-0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS\" crossorigin=\"anonymous\"></script>\n130:  <script src=\"//cdnjs.cloudflare.com/ajax/libs/angular.js/1.4.9/angular.js\"></script>\n131:  <script src=\"//cdnjs.cloudflare.com/ajax/libs/angular.js/1.4.9/angular-route.min.js\"></script>\n132:  <script src=\"//cdnjs.cloudflare.com/ajax/libs/angular.js/1.4.9/angular-animate.min.js\"></script>\n133:  <script src=\"//cdnjs.cloudflare.com/ajax/libs/angular-ui-bootstrap/2.1.4/ui-bootstrap.min.js\"></script>\n134:  <script src=\"//cdnjs.cloudflare.com/ajax/libs/angular-ui-bootstrap/2.1.4/ui-bootstrap-tpls.min.js\"></script>\n136:  <script src=\"assets/js/ngprogress.js\"></script>\n138:  <script src=\"assets/js/app.js\"></script>\n139:  <script src=\"assets/js/routes.js\"></script>\n140:  <script src=\"assets/js/controllers/main.js\"></script>\n141:  <script src=\"assets/js/controllers/home.js\"></script>\n142:  <script src=\"assets/js/controllers/about.js\"></script>\n143:  <script src=\"assets/js/controllers/acordes.js\"></script>\n144:  <script src=\"assets/js/controllers/musica.js\"></script>\n145:  <script src=\"assets/js/controllers/sequencia.js\"></script>\n146:  <script src=\"assets/js/directives/df-hex.js\"></script>\n147:  <script src=\"assets/js/directives/df-esfinge.js\"></script>\n"
+              }
+            ],
+            "metadata": {
+              "status": "completed",
+              "truncated": false,
+              "exit": 0
+            }
+          },
+          "time": {
+            "created": 1794184244443,
+            "ran": 1794184244716,
+            "completed": 1794184244758
+          }
+        }
+      ],
+      "snapshot": {
+        "start": "2cfc6b87a4fd59d60d13e701b1363017ece70beb",
+        "end": "2cfc6b87a4fd59d60d13e701b1363017ece70beb",
+        "files": []
+      },
+      "finish": "tool-calls",
+      "rawFinish": "tool_calls",
+      "cost": 0,
+      "tokens": {
+        "input": 1797,
+        "output": 65,
+        "reasoning": 3662,
+        "cache": {
+          "read": 79000,
+          "write": 0
+        }
+      }
+    },
+    {
+      "id": "msg_1bdb6ee31001q4T5wGChKZlSFU",
+      "time": {
+        "created": 1794184244787,
+        "streamed": 1794184266557,
+        "completed": 1794184266659
+      },
+      "type": "assistant",
+      "agent": "build",
+      "model": {
+        "id": "big-pickle",
+        "providerID": "opencode",
+        "variant": "default"
+      },
+      "content": [
+        {
+          "type": "reasoning",
+          "text": "Yes, JS libs from CDN → internet required. Important.\n\nNow write the roteiro file. Keep it practical and precise. Also mention the existing demo video on the other branch? No.\n\nLet me draft.\n\nTitle: `# Roteiro do vídeo — Sequências de Acordes Customizadas`\n\nSections:\n1. Formato e meta\n2. Checklist antes de gravar (com comandos)\n3. Roteiro, take a take (8 blocos)\n4. O que NÃO fazer / erros comuns\n5. Depois de gravar (salvar, tamanho, commit)\n6. Plano B (venv local)\n\nTimestamps total ~2:30. Let me be careful with the exact UI navigation: home page URL `http://localhost:8080/`, then click card \"Conheces alguma dessas sequências de acordes?\" which goes to `#/porsequencia`. Could also navigate directly; for the video, showing the home page click is nicer.\n\nOne more check: after clicking the sequence, the grid area is on the right on desktop; \"Encontrei essas músicas\" button in the left column scrolls down. At 1280 width, layout is 4/8 columns. Results visible directly after search (no scroll needed at top). Cards show lock icon, title, artist, genre. Maybe scroll a bit.\n\nAlso: after registering, `vm.carregarCatalogo(id)` re-fetches and then searches; there might be a slight delay. The success message appears immediately; results after the catalog request. Mention \"espere 1–2 s\".\n\nAlso: the catalog's new sequence appears at the end of the left column list (7th). On a small screen it may need scrolling; at 1080p fine.\n\nThe duplicate attempt: the form requires chords, name optional; typing lowercase with spaces works. After 409, `carregarCatalogo(erro.id)` → selects existing and searches. Message shows. Good.\n\nFor persistence: after `docker restart`, the browser's page needs reload; the catalog re-fetches. Show the terminal + reload. Need to wait for boot (~3-5s). Provide a command to wait, but on camera keep it simple: restart, count 5, F5.\n\nRecording tips:\n- Browser zoom 110%? At 1080p, default 100% is fine.\n- Hide bookmarks bar (Cmd+Shift+B), mute notifications (Focus mode), close other tabs.\n- Use QuickTime or OBS; mic check; record 1080p 30fps.\n- Keep terminal font large (Cmd +).\n\nFala suggestions should mention the technical decisions briefly (SQLite, real-time matching) because the video demonstrates the feature; the ADR/plan docs cover the rest.\n\nPotential correction: \"as duas que não apareciam antes\" — master frontend had 4 hardcoded: sequencia1 Bm G D A, sequencia2 C G Am F, sequencia3 Gm F, sequencia4 C C7 F Fm. So Em-G (id 3) and C-A7-Dm-G7 (id 4) were missing. Yes, exactly.\n\nExpected counts on click (backend): 199 for Bm-G-D-A; 252 for G-D-Em-C; 296 for C-G-Am-F. Note ids after clean seed: 1 Bm, 2 C, 3 Em, 4 C Samba, 5 Gm, 6 C Samba cont. New = 7.\n\nInteresting: seed order in catalogo: 1 Bm, 2 C, 3 Em(G), 4 C Samba, 5 Gm, 6 C Samba cont. Frontend master showed 4: Bm, C, Gm, C-C7-F-Fm — so Em-G and C-A7-Dm-G7 missing. Correct.\n\nNow write.\n\nAlso include an optional terminal shot to show the API JSON directly:\n\n```\ncurl -s 'http://localhost:8080/sequencias' | python3 -m json.tool | tail -20\n```\n\nBut the browser demo is enough.\n\nCommit file and export session. The user said \"após isso pode exportar a sessão e dar commit\" — so after writing.\n\nLet me write the file now.",
+          "native": {
+            "reasoningField": "reasoning_content"
+          },
+          "time": {
+            "created": 1794184246493,
+            "completed": 1794184266552
+          }
+        },
+        {
+          "type": "tool",
+          "id": "call_93a0e753c7c94515a4d071bf",
+          "name": "write",
+          "executed": false,
+          "state": {
+            "status": "completed",
+            "input": {
+              "path": "/Users/Ronaldd.Feliph/ufcg/ciframe/docs/features/sequencias-customizadas/05-roteiro-video.md",
+              "content": "# Roteiro do vídeo — Sequências de Acordes Customizadas\n\nMeta: ~2min30, 1080p/30fps, com narração. O vídeo precisa mostrar a feature\nfuncionando no browser: catálogo vindo do backend, cadastro de sequência nova,\nbusca por ela, duplicata e persistência após reiniciar o container.\n\n## Antes de gravar (fora do vídeo)\n\nPrecisa de internet: o `static/index.html` carrega Bootstrap, jQuery e\nAngularJS de CDN. Sem rede o layout quebra.\n\n```bash\n# 1. Estado limpo: só as 6 sequências originais\ndocker rm -f ciframe-demo 2>/dev/null || true\ndocker volume rm ciframe-demo-data 2>/dev/null || true\n\n# 2. Imagem (já existe nesta máquina; rebuild só se mudou código)\ndocker build -t ciframe .\n\n# 3. Sobe com volume nomeado, que é o que prova a persistência\ndocker run -d --name ciframe-demo \\\n  -v ciframe-demo-data:/data \\\n  -p 8080:8080 ciframe\n\n# 4. Espera o boot e confere que há 6\nuntil curl -fsS http://localhost:8080/sequencias >/dev/null; do sleep 1; done\ncurl -s http://localhost:8080/sequencias \\\n  | python3 -c \"import json,sys; print(len(json.load(sys.stdin)), 'sequencias')\"\n```\n\nChecklist de gravação:\n\n- [ ] `lsof -nP -iTCP:8080 -sTCP:LISTEN` vazio (porta livre).\n- [ ] Abrir `http://localhost:8080/` e fazer um F5 para conferir o layout.\n- [ ] Esconder a barra de favoritos (Cmd+Shift+B) e silenciar notificações.\n- [ ] Aumentar a fonte do terminal (Cmd+) antes de gravar a parte do Docker.\n- [ ] Testar o microfone e gravar em 1080p/30fps.\n- [ ] Se errar, recomece do início: o catálogo precisa ter 6 itens no take final.\n\n## Roteiro (take único)\n\n### 0:00–0:15 — Abertura\n\n**Tela:** home do deciframe (`http://localhost:8080/`).\n\n**Ação:** clique no card “Conheces alguma dessas sequências de acordes?”.\n\n**Fala:**\n“O deciframe agora permite cadastrar sequências de acordes e buscar músicas\npor elas. Vou mostrar a página Por Sequência.”\n\n### 0:15–0:40 — Catálogo vindo do backend\n\n**Tela:** `#/porsequencia`, coluna da esquerda.\n\n**Ação:** passe o mouse pela lista e destaque as seis sequências. Pare em\n“Sequência Em” (Em-G) e em “Sequência de C (Samba)” (C-A7-Dm-G7).\n\n**Fala:**\n“Antes o frontend tinha quatro sequências fixas em JavaScript. Agora ele\ncarrega o catálogo real do backend. As seis originais aparecem, inclusive\nEm-G e C-A7-Dm-G7, que não existiam na tela antiga.”\n\n**Resultado esperado:** seis blocos de hexágonos, cada um com seu nome.\n\n### 0:40–1:05 — Buscar por uma sequência original\n\n**Ação:** clique em “Sequência de Bm” (Bm-G-D-A) e espere os cards.\n\n**Fala:**\n“Ao clicar, a busca roda em tempo real na cifra das músicas. A sequência\nprecisa aparecer na ordem, numa janela contígua, e a música não pode ter\nacordes fora dela. É a mesma regra que gerou a tag original: dá os mesmos 199\nresultados do teste de regressão — aqui aparecem os 100 primeiros.”\n\n**Resultado esperado:** grade de cards de música; botão “Encontrei essas\nmúsicas” no topo da coluna esquerda.\n\n### 1:05–1:40 — Cadastrar uma sequência nova\n\n**Ação:** no formulário “Cadastrar nova sequência”:\n1. em “Acordes”, digite `G, D, Em, C`;\n2. em “Nome (opcional)”, digite `Progressão pop (G-D-Em-C)`;\n3. clique em “Cadastrar”.\n\n**Fala:**\n“Qualquer visitante cadastra uma sequência, sem login. Eu digito os acordes na\nordem, separados por vírgula, e um nome opcional.”\n\n**Resultado esperado:** mensagem “Sequência cadastrada!”, sétimo item no\ncatálogo já selecionado e a busca disparando nele (252 músicas no total; os 100\nprimeiros cards na tela).\n\n### 1:40–1:55 — A sequência nova já busca\n\n**Ação:** role a grade de resultados devagar e volte ao topo.\n\n**Fala:**\n“A sequência nova entra no catálogo e já pode ser usada para buscar, do mesmo\njeito que as originais.”\n\n### 1:55–2:15 — Duplicata não duplica\n\n**Ação:** no formulário, digite `g d em c` (minúsculas, sem nome) e clique em\n“Cadastrar”.\n\n**Fala:**\n“O cadastro normaliza maiúsculas, minúsculas e espaços. Se a sequência já\nexiste, nada é duplicado: o app avisa e seleciona a que já está no catálogo.”\n\n**Resultado esperado:** “Essa sequência já existe; selecionando a cadastrada.”,\na mesma grade de resultados e o catálogo continuando com sete itens.\n\n### 2:15–2:40 — Persistência no banco\n\n**Ação:** troque para o terminal e rode:\n\n```bash\ndocker restart ciframe-demo\n```\n\nEspere o container subir (~5 s), volte ao browser e aperte F5.\n\n**Fala:**\n“O catálogo fica num SQLite dentro do volume Docker. Reiniciando o container, a\nsequência continua lá — não voltou para as seis originais.”\n\n**Resultado esperado:** catálogo com sete sequências depois do reload,\nincluindo “Progressão pop (G-D-Em-C)”.\n\n### 2:40–2:50 — Fechamento\n\n**Tela:** catálogo com as sete sequências.\n\n**Fala:**\n“Tudo isso sem mexer no CSV de músicas e sem precisar de um novo deploy para\ncada sequência cadastrada.”\n\nFim da gravação.\n\n## Se sobrar tempo (opcional, +15 s cada)\n\n- Abrir o DevTools na aba Network e mostrar `GET /sequencias` e\n  `GET /similares?sequencia_id=7` respondendo 200 depois do cadastro.\n- Testar o link antigo `http://localhost:8080/#/porsequencia` com\n  `/similares?sequencia=BmGDA` via curl, mostrando que a compatibilidade\n  continua.\n- Navegar pelo catálogo só com Tab + Enter, mostrando o acesso por teclado.\n\n## Erros comuns a evitar\n\n- **Não comece com o banco sujo.** Se o catálogo já tiver 7+ itens, refaça o\n  “Estado limpo” antes do take.\n- **Não digite 13 acordes nem acorde com `;`/`,` dentro:** o formulário aceita,\n  mas o backend devolve 400 — fora do escopo da demonstração feliz.\n- **Espere o “Carregando sequências...” sumir** antes de clicar em uma\n  sequência; clicar durante o load não dispara busca.\n- **Não use `docker run --rm`** na demo de persistência: o volume nomeado\n  sobrevive, mas o `--rm` atrapalha o `restart` se o container já tiver saído.\n- **F5 depois do restart**, senão a página continua com o estado em memória do\n  Angular e não prova nada.\n- Se o CSS não carregar, é falta de internet (CDN), não bug da feature.\n\n## Depois de gravar\n\nSalve em `docs/features/sequencias-customizadas/demo-sequencias-customizadas.mp4`\n(ou `.mov`; se for GIF, mantenha abaixo de ~20 MB) e confira o arquivo antes de\ncommitar:\n\n```bash\nls -lh docs/features/sequencias-customizadas/demo-sequencias-customizadas.*\ngit add docs/features/sequencias-customizadas/demo-sequencias-customizadas.*\ngit commit -m \"Adiciona vídeo de demonstração das sequências customizadas\"\n```\n\nOpcional, para gerar um GIF a partir do vídeo:\n\n```bash\nffmpeg -i demo.mov -vf \"fps=12,scale=960:-1\" demo.gif\n```\n\nLimpeza do ambiente da demo:\n\n```bash\ndocker rm -f ciframe-demo\ndocker volume rm ciframe-demo-data\n```\n\n## Plano B: gravar sem Docker (localhost:5000)\n\nSe o Docker atrapalhar a gravação, rode pelo virtualenv — a persistência\ncontinua sendo SQLite:\n\n```bash\nrm -f var/catalogo.db var/catalogo.db-shm var/catalogo.db-wal\nsource .venv/bin/activate\npython main.py          # http://localhost:5000/#/porsequencia\n```\n\nPara o bloco de persistência, `Ctrl+C` e `python main.py` de novo; o arquivo\n`var/catalogo.db` sobrevive e o catálogo continua com sete.\n"
+            },
+            "content": [
+              {
+                "type": "text",
+                "text": "Created file successfully: docs/features/sequencias-customizadas/05-roteiro-video.md"
+              }
+            ],
+            "metadata": {
+              "truncated": false
+            }
+          },
+          "time": {
+            "created": 1794184253524,
+            "ran": 1794184266556,
+            "completed": 1794184266564
+          }
+        }
+      ],
+      "snapshot": {
+        "start": "2cfc6b87a4fd59d60d13e701b1363017ece70beb",
+        "end": "fb3ca3cbdecdafce3903e75698a635875095ae69",
+        "files": [
+          "docs/features/sequencias-customizadas/05-roteiro-video.md"
+        ]
+      },
+      "finish": "tool-calls",
+      "rawFinish": "tool_calls",
+      "cost": 0,
+      "tokens": {
+        "input": 4338,
+        "output": 2326,
+        "reasoning": 914,
+        "cache": {
+          "read": 80668,
           "write": 0
         }
       }
