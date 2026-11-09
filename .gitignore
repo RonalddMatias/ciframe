@@ -3,3 +3,6 @@ static/assets/vendor
 var/
 *.pyc
 __pycache__/
+.coverage
+htmlcov/
+.pytest_cache/
