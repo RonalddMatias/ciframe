@@ -62,9 +62,12 @@ contagens esperadas `199 / 296 / 4 / 5 / 7 / 3`, e `?sequencia=BmGDA`
 - Latência de `/similares?sequencia_id=1` (1 chamada de aquecimento + 20
   chamadas, Flask test client, código final): mín. 209 ms, mediana 211 ms,
   p95 222 ms, máx. 226 ms.
-- Container (`python:3.9-slim`): `POST` 201 → `docker restart` → sequência
-  presente → `docker rm` + `docker run` com o volume `ciframe-data` →
-  sequência presente; duplicata devolve 409 com o id existente.
+- Container (`python:3.9-slim`, build refeito nesta fase com o `.dockerignore`
+  novo): a imagem não contém `docs/`, `research/` nem `tests/`; `GET /generos`
+  200 (52 gêneros) → `POST` 201 (id 7) → `docker restart` → sequência presente
+  → `docker rm` + `docker run` com o mesmo volume → sequência presente;
+  duplicata devolve 409 com o id existente. Dentro do container, `pagina=abc`
+  devolve 400, `sequencia_id` gigante devolve 404 e `/musica/nope/` devolve 404.
 - Render de `#/porsequencia` em Chrome headless: 6 sequências (20 hexágonos),
   incluindo `Em-G` e `C-A7-Dm-G7`; formulário presente; `GET /sequencias` 200.
 - `pytest -q`: 71 passed em 15,55 s.
@@ -93,11 +96,9 @@ coverage run -m pytest -q && coverage report -m
 
 ## O que ficou de fora
 
-- Build e execução do container não foram refeitos nesta fase (o daemon Docker
-  não estava disponível); a persistência do volume foi validada na fase 4. A
-  mudança desta fase no `.dockerignore` só remove `docs/`, `research/`,
-  `tests/` e artefatos de cobertura do contexto de build, sem dependência de
-  runtime.
+- A imagem não foi enxugada além do `.dockerignore`: `Dockerfile`, `LICENSE`,
+  `requirements-dev.txt` e `scripts/` ainda entram no contexto (345 MB,
+  dominados pela base `python:3.9-slim`). Não era objetivo desta fase.
 - Sem teste de concorrência real entre dois workers inserindo a mesma chave ao
   mesmo tempo: o caminho `IntegrityError` é coberto pela duplicata sequencial,
   mas o `raise` de fallback (quando o SELECT também não acha a chave) fica sem
