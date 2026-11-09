@@ -11,7 +11,10 @@
           <button class="btn btn-default btn-sm" ng-click="Sequencia.carregarCatalogo()">Tentar de novo</button>
         </div>
 
-        <div class="acordes-container" ng-repeat='sequencia in Sequencia.sequenciasFamosas' ng-click="Sequencia.pesquisarPorSequencia(sequencia)">
+        <div class="acordes-container" ng-repeat='sequencia in Sequencia.sequenciasFamosas'
+             role="button" tabindex="0"
+             ng-click="Sequencia.pesquisarPorSequencia(sequencia)"
+             ng-keydown="Sequencia.pesquisarPorTeclado($event, sequencia)">
           <df-hex acorde="{{acordeon.acorde}}" acorde-color="{{acordeon.cor}}" acorde-checked="Sequencia.temAcorde(acordeon)" ng-repeat="acordeon in sequencia.acordes"></df-hex>
           <div class="sequencia-nome text-center">{{sequencia.nome}}</div>
         </div>
@@ -70,8 +73,7 @@
 
         <div class="row row-in">
           <div class="col-sm-6 col-lg-4"
-            ng-repeat="music in Sequencia.musics | orderBy:'-popularidade'"
-            ng-hide="music.diferenca.length">
+            ng-repeat="music in Sequencia.musics | orderBy:'-popularidade'">
 
               <div class="music-card" ng-click="Sequencia.goToLirics(music)">
                 <div class="row row-in">

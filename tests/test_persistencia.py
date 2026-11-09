@@ -1,6 +1,8 @@
 # coding: utf-8
 import sqlite3
 
+import pytest
+
 import catalogo
 
 
@@ -25,6 +27,19 @@ def test_nova_sequencia_visivel_em_outra_conexao(tmp_path, monkeypatch):
     assert linha is not None
     assert linha[0] == 'Persistida'
     assert linha[2] == 'am;f;c;g'
+
+
+def test_criar_duplicada_levanta_com_id_existente(tmp_path, monkeypatch):
+    monkeypatch.setenv('CIFRAME_DB', str(tmp_path / 'catalogo.db'))
+    catalogo.init_db()
+
+    primeira = catalogo.criar('Minha', ['Am', 'F', 'C', 'G'])
+    with pytest.raises(catalogo.SequenciaDuplicada) as excinfo:
+        # A chave ignora grafia e espaços, então a UNIQUE barra a segunda.
+        catalogo.criar('Outra', [' am', 'f ', 'C', 'g'])
+
+    assert excinfo.value.id == primeira['id']
+    assert len(catalogo.listar()) == 7
 
 
 def test_init_db_repetido_nao_duplica_o_seed(tmp_path, monkeypatch):

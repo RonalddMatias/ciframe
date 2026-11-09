@@ -78,6 +78,13 @@ angular.module('deciframeApp').controller('SequenciaController', function($http,
     }
   }
 
+  vm.pesquisarPorTeclado = function(evento, sequencia) {
+    if (evento.key === 'Enter' || evento.key === ' ') {
+      evento.preventDefault();
+      vm.pesquisarPorSequencia(sequencia);
+    }
+  };
+
   vm.pesquisarPorSequencia = function(sequencia) {
     if (sequencia) {
       vm.minhaSequencia = sequencia;

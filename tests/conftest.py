@@ -1,5 +1,7 @@
 # coding: utf-8
+import atexit
 import os
+import shutil
 import sys
 import tempfile
 
@@ -9,8 +11,9 @@ if RAIZ not in sys.path:
 
 # main.py chama catalogo.init_db() no import. Aponta o banco para um arquivo
 # temporário antes do import para não criar var/catalogo.db no repositório.
-_IMPORT_DB = os.path.join(
-    tempfile.mkdtemp(prefix='ciframe-import-'), 'catalogo.db')
+_IMPORT_DIR = tempfile.mkdtemp(prefix='ciframe-import-')
+atexit.register(shutil.rmtree, _IMPORT_DIR, ignore_errors=True)
+_IMPORT_DB = os.path.join(_IMPORT_DIR, 'catalogo.db')
 os.environ['CIFRAME_DB'] = _IMPORT_DB
 
 import pytest  # noqa: E402

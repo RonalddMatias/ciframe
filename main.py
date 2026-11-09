@@ -38,6 +38,9 @@ CIFRA = 8
 TAM_PAGINA = 100
 MAX_ACORDES = 12
 MAX_TAM_ACORDE = 20
+MAX_TAM_NOME = 120
+# Limite do INTEGER do SQLite; acima disso o binding estoura OverflowError.
+MAX_ID_SEQUENCIA = 2 ** 63 - 1
 
 genero_musicas = {}
 generos = set()
@@ -168,7 +171,10 @@ def get_acordes():
 
 @app.route('/musica/<m_id>/')
 def get_musica(m_id):
-    return json.dumps(musicas[m_id].to_dict())
+    musica = musicas.get(m_id)
+    if musica is None:
+        return json.dumps({'erro': 'musica nao encontrada'}), 404
+    return json.dumps(musica.to_dict())
 
 def valida_sequencia(payload):
     """Valida o corpo do POST /sequencias; devolve ((nome, acordes), erro)."""
@@ -196,6 +202,8 @@ def valida_sequencia(payload):
     if nome is not None and not isinstance(nome, str):
         return None, 'nome deve ser uma string'
     nome = (nome or '').strip()
+    if len(nome) > MAX_TAM_NOME:
+        return None, 'nome com mais de %d caracteres' % MAX_TAM_NOME
     if not nome:
         nome = 'Sequência de ' + ' - '.join(limpos)
 
@@ -239,13 +247,17 @@ def get_similares():
     if acordes_tag:
         acordes = acordes_tag.split(',')
     elif id_musica_tag:
-        musica = musicas[id_musica_tag]
+        musica = musicas.get(id_musica_tag)
+        if musica is None:
+            return json.dumps({'erro': 'musica nao encontrada'}), 404
         acordes = musica.acordes
     elif sequencia_id_tag is not None:
         try:
             id_seq = int(sequencia_id_tag)
         except (TypeError, ValueError):
             return json.dumps({'erro': 'sequencia_id deve ser um inteiro'}), 400
+        if not 1 <= id_seq <= MAX_ID_SEQUENCIA:
+            return json.dumps({'erro': 'sequencia nao encontrada'}), 404
 
         sequencia = catalogo.buscar(id_seq)
         if sequencia is None:
@@ -267,6 +279,7 @@ def get_similares():
     return json.dumps(get_pagina(similares, pagina_tag))
 
 def get_similares_por_sequencia(sequencia, generos_key):
+    acordes_alvo = set(sequencia['acordes'])
     alvo_norm, alvo_set = prepara_alvo(sequencia['acordes'])
 
     # filtra para melhor desempenho
@@ -275,6 +288,7 @@ def get_similares_por_sequencia(sequencia, generos_key):
     similares = []
     for musica in collection:
         if casa(musica.cifra_norm, musica.acordes_norm, alvo_norm, alvo_set):
+            acordes_musica = set(musica.acordes)
             similar = {
                 'id_unico_musica' : musica.id_unico_musica,
                 'id_artista' : musica.id_artista,
@@ -285,14 +299,31 @@ def get_similares_por_sequencia(sequencia, generos_key):
                 'acordes' : musica.acordes,
                 'genero' : musica.genero,
                 'url' : musica.url,
+                'diferenca' : sorted(acordes_musica - acordes_alvo),
+                'intersecao' : sorted(acordes_musica & acordes_alvo),
             }
             similares.append(similar)
 
     return similares
 
 
+class PaginaInvalida(ValueError):
+    """Página fora do formato aceito (inteiro maior ou igual a 1)."""
+
+
+@app.errorhandler(PaginaInvalida)
+def pagina_invalida(erro):
+    return json.dumps({'erro': str(erro)}), 400
+
+
 def get_pagina(colecao, pagina_tag):
-    sl = (int(pagina_tag) - 1)*TAM_PAGINA
+    try:
+        pagina = int(pagina_tag)
+    except (TypeError, ValueError):
+        raise PaginaInvalida('pagina deve ser um inteiro')
+    if pagina < 1:
+        raise PaginaInvalida('pagina deve ser maior ou igual a 1')
+    sl = (pagina - 1)*TAM_PAGINA
     return colecao[sl:sl+TAM_PAGINA]
 
 def get_similares(acordes, generos_key, id_musica = None):
